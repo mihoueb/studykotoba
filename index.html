@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>和語SRS</title>
+<link href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --deep:#1a3a5c; --teal:#0e8a7a; --teal2:#1ab59e; --teal-l:#d0f0eb;
+  --sun:#f5a623; --sun-l:#fff3d6; --red:#e05252; --red-l:#fde8e8;
+  --grn:#3ab06a; --grn-l:#e0f7ea; --pur:#7c5cbf; --pur-l:#ede8f8;
+  --bg1:#c8e8ff; --bg2:#e8f4fd; --bg3:#d4f0e8;
+  --sh:0 6px 24px rgba(0,0,0,.12); --sh2:0 12px 40px rgba(0,0,0,.18);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 40%,var(--bg3) 100%);min-height:100vh;color:var(--deep);overflow-x:hidden;}
+
+/* ── SCREENS ── */
+.scr{display:none;flex-direction:column;align-items:center;min-height:100vh;padding:16px 16px 48px;position:relative;z-index:1;}
+.scr.on{display:flex;}
+
+/* ── HOME ── */
+.logo{font-family:'Kaisei Decol',serif;font-size:2.4rem;font-weight:700;text-align:center;margin-top:28px;line-height:1.15;text-shadow:0 2px 8px rgba(0,0,0,.1);}
+.logo span{color:var(--teal);}
+.tagline{color:var(--teal);font-size:.85rem;font-weight:700;margin:6px 0 20px;letter-spacing:.08em;}
+
+/* streak */
+.streak-box{background:linear-gradient(135deg,#ff6b35,#f5a623);color:white;border-radius:20px;padding:14px 28px;text-align:center;margin-bottom:18px;box-shadow:var(--sh2);position:relative;overflow:hidden;}
+.streak-box::before{content:'🔥';position:absolute;font-size:4rem;right:-10px;top:-10px;opacity:.2;}
+.streak-num{font-family:'Kaisei Decol',serif;font-size:2.8rem;font-weight:700;display:block;line-height:1;}
+.streak-label{font-size:.78rem;font-weight:800;opacity:.9;letter-spacing:.05em;}
+
+/* today card */
+.today-card{background:white;border-radius:20px;padding:16px 20px;width:100%;max-width:400px;margin-bottom:14px;box-shadow:var(--sh);display:flex;align-items:center;gap:14px;}
+.today-icon{font-size:2rem;flex-shrink:0;}
+.today-text{flex:1;}
+.today-title{font-weight:800;font-size:1rem;color:var(--deep);}
+.today-sub{font-size:.78rem;color:#888;margin-top:2px;}
+.today-badge{background:var(--red);color:white;border-radius:20px;padding:4px 14px;font-size:.8rem;font-weight:800;flex-shrink:0;}
+.today-badge.done{background:var(--grn);}
+
+/* stat grid */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;max-width:400px;margin-bottom:16px;}
+.stat-c{background:white;border-radius:14px;padding:12px 8px;text-align:center;box-shadow:var(--sh);}
+.stat-n{font-family:'Kaisei Decol',serif;font-size:1.6rem;font-weight:700;display:block;}
+.stat-l{font-size:.6rem;font-weight:800;color:#aaa;margin-top:2px;}
+.stat-c.c-grn .stat-n{color:var(--grn);}
+.stat-c.c-sun .stat-n{color:var(--sun);}
+.stat-c.c-red .stat-n{color:var(--red);}
+.stat-c.c-pur .stat-n{color:var(--pur);}
+
+/* menu */
+.mbtn{width:100%;max-width:400px;padding:17px 20px;border:none;border-radius:18px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:1.05rem;font-weight:800;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh);transition:transform .15s;text-align:left;color:white;}
+.mbtn:active{transform:scale(.97);}
+.mbtn .mi{font-size:1.6rem;flex-shrink:0;}
+.mbtn .mt{flex:1;}
+.mbtn .ma{font-size:1.1rem;opacity:.5;}
+.mbtn .badge{background:rgba(255,255,255,.25);border-radius:12px;padding:2px 10px;font-size:.72rem;margin-right:4px;}
+.m-srs{background:linear-gradient(135deg,#0e8a7a,#1ab59e);}
+.m-quiz{background:linear-gradient(135deg,#f5a623,#f7c05a);}
+.m-hard{background:linear-gradient(135deg,#e05252,#f07070);}
+.m-stat{background:linear-gradient(135deg,#7c5cbf,#a07de0);}
+.m-list{background:linear-gradient(135deg,#3a7bd5,#5a9be8);}
+
+/* ── COMMON HEADER ── */
+.hdr{width:100%;max-width:460px;display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.bk{background:white;border:none;border-radius:50%;width:42px;height:42px;font-size:1.1rem;cursor:pointer;box-shadow:var(--sh);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:transform .15s;}
+.bk:active{transform:scale(.9);}
+.htitle{font-family:'Kaisei Decol',serif;font-size:1.25rem;font-weight:700;}
+.hpill{margin-left:auto;background:white;border-radius:20px;padding:4px 14px;font-size:.76rem;font-weight:800;color:var(--deep);box-shadow:var(--sh);white-space:nowrap;}
+.pbar{width:100%;max-width:460px;height:9px;background:rgba(255,255,255,.5);border-radius:9px;margin-bottom:16px;overflow:hidden;}
+.pfill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal2));border-radius:9px;transition:width .4s;}
+
+/* ── SRS CARD ── */
+.card-wrap{width:100%;max-width:460px;perspective:1400px;height:250px;cursor:pointer;margin-bottom:16px;flex-shrink:0;}
+.card-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1);}
+.card-inner.flip{transform:rotateY(180deg);}
+.cface{position:absolute;width:100%;height:100%;backface-visibility:hidden;background:white;border-radius:24px;box-shadow:var(--sh2);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 20px;text-align:center;}
+.cback{transform:rotateY(180deg);background:linear-gradient(135deg,#f0faf8,#e0f7ea);}
+.ctag{font-size:.65rem;font-weight:800;letter-spacing:.12em;color:#bbb;margin-bottom:8px;text-transform:uppercase;}
+.cword{font-family:'Kaisei Decol',serif;font-size:2.5rem;font-weight:700;color:var(--deep);line-height:1.1;margin-bottom:4px;}
+.cread{font-size:.82rem;color:#bbb;margin-bottom:4px;}
+.chint{font-size:.7rem;color:#ccc;margin-top:10px;}
+.cmean{font-size:1.05rem;line-height:1.8;color:var(--deep);font-weight:700;margin-bottom:8px;}
+.cex{font-size:.76rem;color:#666;line-height:1.7;border-left:3px solid var(--teal);padding-left:10px;text-align:left;width:100%;}
+.cbadge{position:absolute;top:12px;right:14px;border-radius:11px;padding:3px 9px;font-size:.62rem;font-weight:800;}
+
+/* SRS rating buttons */
+.rating-hint{font-size:.7rem;color:#999;text-align:center;margin-bottom:8px;}
+.rating-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;max-width:460px;margin-bottom:14px;}
+.rbtn{padding:12px 6px;border:none;border-radius:14px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.75rem;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;box-shadow:var(--sh);transition:transform .15s;}
+.rbtn:active{transform:scale(.94);}
+.rbtn .ri{font-size:1.2rem;}
+.rbtn .rint{font-size:.62rem;opacity:.75;margin-top:1px;}
+.r0{background:var(--red-l);color:var(--red);}
+.r1{background:#fff3e0;color:#e65100;}
+.r2{background:var(--sun-l);color:var(--sun);}
+.r3{background:var(--grn-l);color:var(--grn);}
+
+.fc-nav{display:flex;gap:8px;width:100%;max-width:460px;}
+.navbtn{flex:1;padding:13px;border:none;border-radius:13px;background:white;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.88rem;font-weight:800;color:var(--deep);cursor:pointer;box-shadow:var(--sh);transition:transform .15s;}
+.navbtn:active{transform:scale(.95);}
+
+/* ── QUIZ ── */
+.qtype-row{display:flex;gap:7px;width:100%;max-width:460px;margin-bottom:13px;}
+.qtbtn{flex:1;padding:9px 4px;border:2px solid rgba(255,255,255,.5);border-radius:12px;background:rgba(255,255,255,.4);font-family:'M PLUS Rounded 1c',sans-serif;font-size:.73rem;font-weight:800;cursor:pointer;color:var(--deep);transition:all .15s;}
+.qtbtn.on{background:white;border-color:white;box-shadow:var(--sh);}
+.qbox{width:100%;max-width:460px;background:white;border-radius:20px;padding:20px 18px;box-shadow:var(--sh2);margin-bottom:14px;min-height:115px;display:flex;flex-direction:column;justify-content:center;}
+.qlbl{font-size:.68rem;font-weight:800;color:#bbb;letter-spacing:.1em;margin-bottom:8px;}
+.qtxt{font-family:'Kaisei Decol',serif;font-size:1.5rem;font-weight:700;line-height:1.5;color:var(--deep);}
+.qsub{font-size:.78rem;color:#888;margin-top:7px;line-height:1.6;}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:100%;max-width:460px;margin-bottom:12px;}
+.ch{padding:14px 12px;background:white;border:2px solid transparent;border-radius:15px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.85rem;font-weight:700;text-align:center;line-height:1.5;cursor:pointer;box-shadow:var(--sh);transition:all .15s;color:var(--deep);}
+.ch:active{transform:scale(.96);}
+.ch.ok{background:var(--grn-l);border-color:var(--grn);color:var(--grn);}
+.ch.ng{background:var(--red-l);border-color:var(--red);color:var(--red);}
+.fill-row{display:flex;gap:8px;width:100%;max-width:460px;margin-bottom:12px;}
+.finp{flex:1;padding:13px;border:2px solid rgba(255,255,255,.8);border-radius:13px;background:white;font-family:'M PLUS Rounded 1c',sans-serif;font-size:1rem;font-weight:700;color:var(--deep);outline:none;box-shadow:var(--sh);}
+.finp:focus{border-color:var(--teal);}
+.fsub{padding:13px 18px;background:linear-gradient(135deg,var(--teal),var(--teal2));border:none;border-radius:13px;color:white;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.88rem;font-weight:800;cursor:pointer;box-shadow:var(--sh);flex-shrink:0;}
+.fb{width:100%;max-width:460px;padding:13px 16px;border-radius:15px;font-weight:800;font-size:.88rem;line-height:1.7;margin-bottom:11px;display:none;}
+.fb.ok{background:var(--grn-l);color:var(--grn);}
+.fb.ng{background:var(--red-l);color:var(--red);}
+.nxtbtn{width:100%;max-width:460px;padding:16px;border:none;border-radius:15px;background:linear-gradient(135deg,var(--deep),#2a5080);color:white;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.95rem;font-weight:800;cursor:pointer;box-shadow:var(--sh2);display:none;transition:transform .15s;}
+.nxtbtn:active{transform:scale(.97);}
+
+/* ── STATS SCREEN ── */
+.acc-ring-wrap{width:100%;max-width:460px;display:flex;align-items:center;gap:20px;background:white;border-radius:20px;padding:20px;box-shadow:var(--sh);margin-bottom:14px;}
+.ring-svg{width:100px;height:100px;flex-shrink:0;}
+.ring-bg{fill:none;stroke:#eee;stroke-width:10;}
+.ring-fg{fill:none;stroke:var(--teal);stroke-width:10;stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dashoffset .6s;}
+.ring-txt{font-family:'Kaisei Decol',serif;font-size:.95rem;font-weight:700;fill:var(--deep);text-anchor:middle;dominant-baseline:middle;}
+.acc-info{flex:1;}
+.acc-big{font-family:'Kaisei Decol',serif;font-size:2rem;font-weight:700;color:var(--teal);}
+.acc-label{font-size:.75rem;color:#888;font-weight:700;}
+.acc-row{display:flex;gap:16px;margin-top:8px;}
+.acc-sub{font-size:.8rem;color:#666;}
+.acc-sub strong{color:var(--deep);}
+
+.hist-title{width:100%;max-width:460px;font-family:'Kaisei Decol',serif;font-size:1rem;font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid rgba(255,255,255,.6);}
+.hist-bars{width:100%;max-width:460px;background:white;border-radius:16px;padding:16px;box-shadow:var(--sh);margin-bottom:14px;}
+.hbar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.hbar-label{font-size:.72rem;font-weight:700;width:28px;text-align:right;color:#888;flex-shrink:0;}
+.hbar-track{flex:1;height:18px;background:#f0f0f0;border-radius:9px;overflow:hidden;}
+.hbar-fill{height:100%;border-radius:9px;transition:width .5s;}
+.hbar-val{font-size:.7rem;font-weight:800;width:30px;color:var(--deep);flex-shrink:0;}
+
+.due-list{width:100%;max-width:460px;}
+.due-item{background:white;border-radius:14px;padding:12px 16px;margin-bottom:8px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px;}
+.due-word{font-family:'Kaisei Decol',serif;font-size:1rem;font-weight:700;flex:1;}
+.due-when{font-size:.72rem;font-weight:800;padding:3px 10px;border-radius:10px;}
+.due-today{background:var(--red-l);color:var(--red);}
+.due-soon{background:var(--sun-l);color:var(--sun);}
+.due-later{background:var(--grn-l);color:var(--grn);}
+.due-new{background:var(--pur-l);color:var(--pur);}
+
+/* ── LIST ── */
+.sinp{width:100%;max-width:460px;padding:12px 16px;border:none;border-radius:13px;background:white;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.92rem;color:var(--deep);outline:none;box-shadow:var(--sh);margin-bottom:11px;}
+.flrow{display:flex;gap:6px;width:100%;max-width:460px;margin-bottom:11px;overflow-x:auto;padding-bottom:3px;}
+.flrow::-webkit-scrollbar{height:3px;}
+.flbtn{padding:6px 12px;border:2px solid rgba(255,255,255,.6);border-radius:16px;background:rgba(255,255,255,.4);font-family:'M PLUS Rounded 1c',sans-serif;font-size:.7rem;font-weight:800;cursor:pointer;white-space:nowrap;color:var(--deep);flex-shrink:0;}
+.flbtn.on{background:white;border-color:white;box-shadow:var(--sh);}
+.wcard{width:100%;max-width:460px;background:white;border-radius:15px;padding:13px 16px;margin-bottom:9px;box-shadow:var(--sh);display:flex;gap:11px;align-items:flex-start;}
+.wi{font-size:1.2rem;flex-shrink:0;margin-top:2px;}
+.ww{font-family:'Kaisei Decol',serif;font-size:1.1rem;font-weight:700;color:var(--deep);}
+.wr{font-size:.68rem;color:#bbb;}
+.wm{font-size:.8rem;color:#555;line-height:1.6;margin-top:3px;}
+.wtags{margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;}
+.tag{font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:9px;}
+.tc{background:var(--teal-l);color:var(--teal);}
+.tl{background:var(--sun-l);color:#b87000;}
+.ts{background:var(--pur-l);color:var(--pur);}
+.srs-bar-wrap{margin-top:5px;height:4px;background:#eee;border-radius:2px;width:100%;}
+.srs-bar{height:100%;border-radius:2px;transition:width .4s;}
+
+/* ── RESULT OVERLAY ── */
+.rovl{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center;}
+.rovl.on{display:flex;}
+.rcard{background:white;border-radius:28px;padding:32px 24px;text-align:center;max-width:300px;width:90%;box-shadow:var(--sh2);animation:popIn .4s cubic-bezier(.3,1.4,.5,1);}
+@keyframes popIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.remo{font-size:3.5rem;margin-bottom:10px;}
+.rtit{font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;margin-bottom:6px;}
+.rsco{font-size:.92rem;color:#666;margin-bottom:16px;}
+.rsco strong{color:var(--teal);font-size:1.4rem;}
+.rbtn2{padding:12px 24px;border:none;border-radius:13px;background:linear-gradient(135deg,var(--teal),var(--teal2));color:white;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.92rem;font-weight:800;cursor:pointer;box-shadow:var(--sh);margin:3px;}
+.rbtn2.s{background:linear-gradient(135deg,var(--pur),#a07de0);}
+
+/* ── TOAST / FX ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--deep);color:white;padding:11px 24px;border-radius:40px;font-size:.84rem;font-weight:800;box-shadow:var(--sh2);z-index:300;transition:transform .3s;white-space:nowrap;}
+.toast.on{transform:translateX(-50%) translateY(0);}
+@keyframes shoot{0%{transform:translateX(-120px) translateY(120px) rotate(-45deg);opacity:0}10%{opacity:1}100%{transform:translateX(450px) translateY(-450px) rotate(-45deg);opacity:0}}
+.shoot{position:fixed;font-size:1.3rem;pointer-events:none;z-index:400;animation:shoot .85s forwards;}
+
+/* stars bg */
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.star{position:absolute;opacity:.14;animation:fs 12s infinite ease-in-out;}
+@keyframes fs{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-16px) rotate(18deg)}}
+
+@media(max-width:460px){.cgrid{grid-template-columns:1fr}.cword{font-size:2rem}.rating-row{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+
+<!-- ═══ HOME ═══ -->
+<div class="scr on" id="s-home">
+  <div class="logo">和語<span>SRS</span></div>
+  <div class="tagline">✦ 忘却曲線に勝つ学習システム ✦</div>
+
+  <div class="streak-box" style="width:100%;max-width:400px;margin-bottom:14px">
+    <span class="streak-num" id="h-streak">0</span>
+    <div class="streak-label">🔥 連続学習日数</div>
+  </div>
+
+  <div class="today-card" id="today-card">
+    <div class="today-icon">📅</div>
+    <div class="today-text">
+      <div class="today-title" id="today-title">今日の復習</div>
+      <div class="today-sub" id="today-sub">読み込み中…</div>
+    </div>
+    <div class="today-badge" id="today-badge">0語</div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-c c-grn"><span class="stat-n" id="h-learned">0</span><div class="stat-l">⭐習得</div></div>
+    <div class="stat-c c-sun"><span class="stat-n" id="h-review">0</span><div class="stat-l">📅復習中</div></div>
+    <div class="stat-c c-red"><span class="stat-n" id="h-due">0</span><div class="stat-l">🔴期限</div></div>
+    <div class="stat-c c-pur"><span class="stat-n" id="h-new">0</span><div class="stat-l">🆕未学習</div></div>
+  </div>
+
+  <button class="mbtn m-srs" onclick="goSRS()">
+    <span class="mi">🧠</span>
+    <div class="mt"><div>SRS復習セッション</div><div style="font-size:.72rem;opacity:.8;font-weight:400">今日期限の語句を賢く復習</div></div>
+    <span class="badge" id="srs-badge">0語</span>
+    <span class="ma">›</span>
+  </button>
+  <button class="mbtn m-quiz" onclick="goQuiz('all')">
+    <span class="mi">📝</span>
+    <div class="mt"><div>クイズに挑戦！</div><div style="font-size:.72rem;opacity:.8;font-weight:400">四択・穴埋め・意味あてで練習</div></div>
+    <span class="ma">›</span>
+  </button>
+  <button class="mbtn m-hard" onclick="goHard()">
+    <span class="mi">🔥</span>
+    <div class="mt"><div>苦手集中練習</div><div style="font-size:.72rem;opacity:.8;font-weight:400">正答率の低い語句を特訓</div></div>
+    <span class="badge" id="hard-badge">0語</span>
+    <span class="ma">›</span>
+  </button>
+  <button class="mbtn m-stat" onclick="goStats()">
+    <span class="mi">📊</span>
+    <div class="mt"><div>学習統計・進捗</div><div style="font-size:.72rem;opacity:.8;font-weight:400">正答率グラフ・次回出題予定</div></div>
+    <span class="ma">›</span>
+  </button>
+  <button class="mbtn m-list" onclick="goList()">
+    <span class="mi">📖</span>
+    <div class="mt"><div>語句いちらん</div><div style="font-size:.72rem;opacity:.8;font-weight:400">全語句・定着度を確認</div></div>
+    <span class="ma">›</span>
+  </button>
+</div>
+
+<!-- ═══ SRS SESSION ═══ -->
+<div class="scr" id="s-srs">
+  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle" id="srs-title">🧠 SRS復習</div><div class="hpill" id="srs-pill">0/0</div></div>
+  <div class="pbar"><div class="pfill" id="srs-prog"></div></div>
+
+  <div class="card-wrap" onclick="srsFlip()">
+    <div class="card-inner" id="srs-ci">
+      <div class="cface">
+        <div class="cbadge" id="srs-badge2" style="background:var(--teal-l);color:var(--teal)"></div>
+        <div class="ctag">語句</div>
+        <div class="cword" id="srs-word">—</div>
+        <div class="cread" id="srs-read"></div>
+        <div class="cex" id="srs-ex-front" style="margin-top:10px"></div>
+        <div class="chint">👆 タップして意味を見る</div>
+      </div>
+      <div class="cface cback">
+        <div class="ctag">意味</div>
+        <div class="cmean" id="srs-mean">—</div>
+        <div class="cex" id="srs-ex"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rating-hint" id="rating-hint" style="opacity:.4">↓ どのくらい覚えてた？正直に答えよう</div>
+  <div class="rating-row" id="rating-row" style="opacity:.4;pointer-events:none">
+    <button class="rbtn r0" onclick="srsRate(0)"><span class="ri">😵</span><span>全然</span><span class="rint">すぐ再出題</span></button>
+    <button class="rbtn r1" onclick="srsRate(1)"><span class="ri">😓</span><span>うろ覚え</span><span class="rint">1日後</span></button>
+    <button class="rbtn r2" onclick="srsRate(2)"><span class="ri">🤔</span><span>だいたい</span><span class="rint" id="r2-int">3日後</span></button>
+    <button class="rbtn r3" onclick="srsRate(3)"><span class="ri">⭐</span><span>バッチリ</span><span class="rint" id="r3-int">7日後</span></button>
+  </div>
+</div>
+
+<!-- ═══ QUIZ ═══ -->
+<div class="scr" id="s-quiz">
+  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle" id="q-title">クイズ</div><div class="hpill" id="q-pill">0/0</div></div>
+  <div class="pbar"><div class="pfill" id="q-prog" style="width:0%"></div></div>
+  <div class="qtype-row">
+    <button class="qtbtn on" onclick="setQT('choice',this)">四択</button>
+    <button class="qtbtn" onclick="setQT('fill',this)">穴埋め</button>
+    <button class="qtbtn" onclick="setQT('reverse',this)">意味→語句</button>
+  </div>
+  <div class="qbox"><div class="qlbl" id="qlbl">問題</div><div class="qtxt" id="qtxt">—</div><div class="qsub" id="qsub"></div></div>
+  <div class="cgrid" id="cgrid"></div>
+  <div class="fill-row" id="frow" style="display:none"><input class="finp" id="finp" placeholder="ひらがなで入力…" onkeydown="if(event.key==='Enter')submitF()"><button class="fsub" onclick="submitF()">答える</button></div>
+  <div class="fb" id="fb"></div>
+  <button class="nxtbtn" id="nxtbtn" onclick="nextQ()">つぎの問題 →</button>
+</div>
+
+<!-- ═══ STATS ═══ -->
+<div class="scr" id="s-stats">
+  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">📊 学習統計</div></div>
+
+  <div class="acc-ring-wrap">
+    <svg class="ring-svg" viewBox="0 0 100 100">
+      <circle class="ring-bg" cx="50" cy="50" r="40"/>
+      <circle class="ring-fg" id="ring-fg" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+      <text class="ring-txt" x="50" y="50" id="ring-txt">—%</text>
+    </svg>
+    <div class="acc-info">
+      <div class="acc-big" id="acc-big">—%</div>
+      <div class="acc-label">総合正答率</div>
+      <div class="acc-row">
+        <div class="acc-sub">正解 <strong id="acc-ok">0</strong></div>
+        <div class="acc-sub">不正解 <strong id="acc-ng">0</strong></div>
+      </div>
+      <div class="acc-row" style="margin-top:6px">
+        <div class="acc-sub">🔥連続 <strong id="acc-streak">0</strong>日</div>
+        <div class="acc-sub">📅今日 <strong id="acc-today">0</strong>問</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hist-title">📈 レベル別 正答率</div>
+  <div class="hist-bars" id="hist-bars"></div>
+
+  <div class="hist-title">⏰ 次回出題スケジュール（上位15語）</div>
+  <div class="due-list" id="due-list"></div>
+</div>
+
+<!-- ═══ LIST ═══ -->
+<div class="scr" id="s-list">
+  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">📖 語句いちらん</div><div class="hpill" id="list-pill">0語</div></div>
+  <input class="sinp" id="sinp" placeholder="🔍 語句・意味を検索…" oninput="renderList()">
+  <div class="flrow" id="flrow"></div>
+  <div id="list-area"></div>
+</div>
+
+<!-- RESULT -->
+<div class="rovl" id="rovl">
+  <div class="rcard">
+    <div class="remo" id="remo">🎉</div>
+    <div class="rtit" id="rtit">おつかれさま！</div>
+    <div class="rsco" id="rsco"></div>
+    <button class="rbtn2" onclick="closeResult()">もう一度！</button>
+    <button class="rbtn2 s" onclick="goHome();closeResult()">ホームへ</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════
+// WORD DATA
+// ════════════════════════════════════════════════
+const ALL=[
+  {w:"あくせくする",r:"",m:"心にゆとりがなく、こせこせと動き回る。",ex:"日々の暮らしにあくせくする。",cat:"動詞",lv:"A1"},
+  {w:"うろたえる",r:"",m:"突然のことに驚き、あわてふためく。",ex:"うろたえて何もできなかった。",cat:"動詞",lv:"A1"},
+  {w:"あざむく",r:"",m:"だましてうまくやる。欺く。",ex:"人をあざむく。",cat:"動詞",lv:"A1"},
+  {w:"くつろぐ",r:"",m:"気持ちを楽にしてゆったりする。",ex:"家でくつろぐ。",cat:"動詞",lv:"A1"},
+  {w:"たたずむ",r:"",m:"その場に静かに立っている。",ex:"川のほとりにたたずむ。",cat:"動詞",lv:"A1"},
+  {w:"つのる",r:"",m:"だんだん激しくなる。募る。",ex:"不安がつのる。",cat:"動詞",lv:"A1"},
+  {w:"たわむれる",r:"",m:"ふざけて楽しく遊ぶ。戯れる。",ex:"公園で犬とたわむれる。",cat:"動詞",lv:"A1"},
+  {w:"はぐくむ",r:"",m:"大切に育てる。育む。",ex:"才能をはぐくむ。",cat:"動詞",lv:"A1"},
+  {w:"ひるむ",r:"",m:"おじけづいて気持ちがくじける。",ex:"困難にひるまない。",cat:"動詞",lv:"A1"},
+  {w:"しのぐ",r:"",m:"困難に耐えてのり越える。凌ぐ。",ex:"寒さをしのぐ。",cat:"動詞",lv:"A1"},
+  {w:"ためらう",r:"",m:"どうしようかと迷って決めかねる。",ex:"返事をためらう。",cat:"動詞",lv:"A1"},
+  {w:"とがめる",r:"",m:"悪いことをしたと責める。",ex:"良心がとがめる。",cat:"動詞",lv:"A1"},
+  {w:"ひしめく",r:"",m:"大勢がひしひしと押し合う。",ex:"大勢の客がひしめく。",cat:"動詞",lv:"A1"},
+  {w:"わきまえる",r:"",m:"物事の区別をよく理解する。",ex:"立場をわきまえる。",cat:"動詞",lv:"A1"},
+  {w:"いたずらに",r:"",m:"むだに。なんの成果もなく。",ex:"いたずらに時間を費やす。",cat:"副詞",lv:"A1"},
+  {w:"おびただしい",r:"",m:"数や量がひじょうに多い。",ex:"おびただしい数の来客。",cat:"形容詞",lv:"A1"},
+  {w:"けばけばしい",r:"",m:"色や飾りが派手すぎて下品な様子。",ex:"けばけばしい服装。",cat:"形容詞",lv:"A1"},
+  {w:"あどけない",r:"",m:"無邪気で子どもらしい様子。",ex:"あどけない笑顔。",cat:"形容詞",lv:"A2"},
+  {w:"ういういしい",r:"",m:"うぶでなれていない様子。初々しい。",ex:"ういういしい新入生。",cat:"形容詞",lv:"A2"},
+  {w:"ぎこちない",r:"",m:"動作がなめらかでない様子。",ex:"ぎこちなく挨拶する。",cat:"形容詞",lv:"A2"},
+  {w:"さりげない",r:"",m:"それとなく自然にふるまう様子。",ex:"さりげなく助ける。",cat:"形容詞",lv:"A2"},
+  {w:"せつない",r:"",m:"胸が痛くなるほど悲しく、つらい様子。",ex:"せつない気持ちになる。",cat:"形容詞",lv:"A2"},
+  {w:"いじらしい",r:"",m:"かわいそうで同情をそそる。けなげ。",ex:"いじらしい努力。",cat:"形容詞",lv:"A2"},
+  {w:"うしろめたい",r:"",m:"自分の行いが悪いと感じて気がとがめる。",ex:"うしろめたい気持ち。",cat:"形容詞",lv:"A2"},
+  {w:"つつましい",r:"",m:"ひかえめでつつましやかな様子。",ex:"つつましく生活する。",cat:"形容詞",lv:"A2"},
+  {w:"みずみずしい",r:"",m:"若々しくみずみずしい様子。",ex:"みずみずしい感性。",cat:"形容詞",lv:"A2"},
+  {w:"わびしい",r:"",m:"さびしくて心細い様子。",ex:"わびしい冬の夕暮れ。",cat:"形容詞",lv:"A2"},
+  {w:"へりくだる",r:"",m:"自分を低くして相手を敬う。謙遜する。",ex:"へりくだった態度。",cat:"動詞",lv:"A2"},
+  {w:"いとおしい",r:"",m:"かわいくてたまらない。いとしい。",ex:"いとおしく思う。",cat:"形容詞",lv:"A2"},
+  {w:"もどかしい",r:"",m:"思い通りにいかなくてじれったい。",ex:"もどかしい気持ち。",cat:"形容詞",lv:"A2"},
+  {w:"あらわに",r:"",m:"隠さずはっきりと。露わに。",ex:"感情をあらわに表す。",cat:"副詞",lv:"A3"},
+  {w:"いちはやく",r:"",m:"他よりもいちばん早く。",ex:"いちはやく現場に向かう。",cat:"副詞",lv:"A3"},
+  {w:"うるわしい",r:"",m:"美しく麗しい様子。",ex:"うるわしい友情。",cat:"形容詞",lv:"A3"},
+  {w:"かたくなに",r:"",m:"意地を張って頑固に。",ex:"かたくなに拒む。",cat:"副詞",lv:"A3"},
+  {w:"わずらわしい",r:"",m:"面倒で煩わしい様子。",ex:"わずらわしい手続き。",cat:"形容詞",lv:"A3"},
+  {w:"ふてくされる",r:"",m:"不満で投げやりになる。",ex:"ふてくされて部屋にこもる。",cat:"動詞",lv:"A3"},
+  {w:"おくゆかしい",r:"",m:"奥深くて上品な様子。",ex:"おくゆかしい人柄。",cat:"形容詞",lv:"A3"},
+  {w:"こうばしい",r:"",m:"いい香りがする。香ばしい。",ex:"こうばしい香り。",cat:"形容詞",lv:"A3"},
+  {w:"すがすがしい",r:"",m:"さわやかで気持ちよい様子。",ex:"すがすがしい朝の空気。",cat:"形容詞",lv:"A3"},
+  {w:"はなばなしい",r:"",m:"輝かしく華やかな様子。",ex:"はなばなしい活躍。",cat:"形容詞",lv:"A3"},
+  {w:"あからさまに",r:"",m:"隠さずあきらかに。露骨に。",ex:"あからさまに不満を示す。",cat:"副詞",lv:"A4"},
+  {w:"いつくしむ",r:"",m:"かわいがって大切にする。慈しむ。",ex:"子どもをいつくしむ。",cat:"動詞",lv:"A4"},
+  {w:"うなだれる",r:"",m:"元気をなくして頭を垂れる。",ex:"失敗してうなだれる。",cat:"動詞",lv:"A4"},
+  {w:"おごそかに",r:"",m:"厳かで重々しい様子。",ex:"おごそかに式が進む。",cat:"副詞",lv:"A4"},
+  {w:"かよわい",r:"",m:"体や力がかよわく弱い様子。",ex:"かよわい生き物を守る。",cat:"形容詞",lv:"A4"},
+  {w:"まことしやかに",r:"",m:"いかにも本当らしく。",ex:"まことしやかに語る。",cat:"副詞",lv:"A4"},
+  {w:"ひたすら",r:"",m:"ただそのことだけに集中して。",ex:"ひたすら練習する。",cat:"副詞",lv:"A4"},
+  {w:"めざましい",r:"",m:"目覚ましく素晴らしい様子。",ex:"めざましい活躍。",cat:"形容詞",lv:"A4"},
+  {w:"わるびれる",r:"",m:"悪いことをしたと感じて恥じる。",ex:"わるびれずに答える。",cat:"動詞",lv:"A4"},
+  {w:"ちなみに",r:"",m:"それに関連して言うと。",ex:"ちなみに私も同じだ。",cat:"副詞",lv:"A4"},
+  {w:"いかにも",r:"",m:"本当にそうだという様子。まったくその通り。",ex:"いかにもうれしそうな顔。",cat:"副詞",lv:"A5"},
+  {w:"おっとり",r:"",m:"のんびりとしてゆったりした様子。",ex:"おっとりとした性格。",cat:"副詞",lv:"A5"},
+  {w:"さばさば",r:"",m:"さっぱりしてすっきりした様子。",ex:"さばさばした性格。",cat:"副詞",lv:"A5"},
+  {w:"ぼんやり",r:"",m:"はっきりしない様子。ぼうっとしている。",ex:"ぼんやりと空を見る。",cat:"副詞",lv:"A5"},
+  {w:"もくもく",r:"",m:"黙って一生懸命に物事をする様子。",ex:"もくもくと作業する。",cat:"副詞",lv:"A5"},
+  {w:"きびきび",r:"",m:"動作が活発ではきはきした様子。",ex:"きびきびと働く。",cat:"副詞",lv:"A5"},
+  {w:"うつらうつら",r:"",m:"うとうとしている様子。",ex:"授業中うつらうつらする。",cat:"副詞",lv:"A5"},
+  {w:"わくわく",r:"",m:"期待や喜びで胸がどきどきする様子。",ex:"わくわくしながら待つ。",cat:"副詞",lv:"A5"},
+  {w:"あいづち",r:"",m:"相手の話に調子を合わせてうなずくこと。",ex:"あいづちを打ちながら聞く。",cat:"名詞",lv:"A6"},
+  {w:"ならわし",r:"",m:"昔から行われてきた習慣・風習。",ex:"地域のならわしを守る。",cat:"名詞",lv:"A6"},
+  {w:"きざし",r:"",m:"物事が起こりそうな前兆。",ex:"春のきざし。",cat:"名詞",lv:"A6"},
+  {w:"こだわる",r:"",m:"ちょっとしたことが気になって離れられない。",ex:"細部にこだわる。",cat:"動詞",lv:"A6"},
+  {w:"かろんじる",r:"",m:"軽く見る。見くびる。",ex:"相手をかろんじる。",cat:"動詞",lv:"A6"},
+  {w:"おろそかにする",r:"",m:"いい加減にして手を抜く。",ex:"勉強をおろそかにする。",cat:"動詞",lv:"A6"},
+  {w:"はばかる",r:"",m:"遠慮してためらう。",ex:"はばかりながら申し上げます。",cat:"動詞",lv:"A6"},
+  {w:"おもねる",r:"",m:"相手の気に入るようにへつらう。",ex:"上司におもねる。",cat:"動詞",lv:"A7"},
+  {w:"こびる",r:"",m:"相手の機嫌をとって気に入られようとする。",ex:"権力者にこびる。",cat:"動詞",lv:"A7"},
+  {w:"うわのそら",r:"",m:"上の空。心ここにあらずの状態。",ex:"うわのそらで聞く。",cat:"名詞",lv:"A7"},
+  {w:"つくづく",r:"",m:"しみじみと深く感じる様子。",ex:"つくづく感心する。",cat:"副詞",lv:"A7"},
+  {w:"せいぜい",r:"",m:"力の及ぶ限りに。多くても。",ex:"せいぜい頑張ります。",cat:"副詞",lv:"A7"},
+  {w:"せっぱつまる",r:"",m:"追い詰められてどうにもならない状態になる。",ex:"せっぱつまった状況。",cat:"動詞",lv:"A7"},
+  {w:"おぼつかない",r:"",m:"頼りなく不安な様子。",ex:"おぼつかない足取り。",cat:"形容詞",lv:"A7"},
+  {w:"かさにかかる",r:"",m:"勢いに乗って横柄にふるまう。",ex:"勝ちに乗じてかさにかかる。",cat:"動詞",lv:"A8"},
+  {w:"ひそかに",r:"",m:"人知れずひっそりと。",ex:"ひそかに準備する。",cat:"副詞",lv:"A8"},
+  {w:"うるおす",r:"",m:"潤す。恵みを与えて豊かにする。",ex:"社会をうるおす。",cat:"動詞",lv:"A8"},
+  {w:"さまたげる",r:"",m:"妨げる。邪魔をする。",ex:"進歩をさまたげる。",cat:"動詞",lv:"A8"},
+  {w:"ふさわしい",r:"",m:"ちょうどよく合っている。相応しい。",ex:"場にふさわしい服装。",cat:"形容詞",lv:"A8"},
+  {w:"つらぬく",r:"",m:"突き通す。最後まで貫く。",ex:"信念をつらぬく。",cat:"動詞",lv:"A8"},
+  {w:"あかつき",r:"",m:"夜明け。ある事が実現した時。",ex:"成功のあかつきには。",cat:"名詞",lv:"A9"},
+  {w:"いきさつ",r:"",m:"物事の経緯。なりゆき。",ex:"事件のいきさつを話す。",cat:"名詞",lv:"A9"},
+  {w:"おもかげ",r:"",m:"目に浮かぶ顔・姿。面影。",ex:"亡き人のおもかげ。",cat:"名詞",lv:"A9"},
+  {w:"かねあい",r:"",m:"つりあい。均衡。",ex:"かねあいを考える。",cat:"名詞",lv:"A9"},
+  {w:"たけなわ",r:"",m:"物事が最も盛んな状態。",ex:"宴もたけなわ。",cat:"名詞",lv:"A9"},
+  {w:"つかのま",r:"",m:"ほんのわずかな時間。",ex:"つかのまの休息。",cat:"名詞",lv:"A9"},
+  {w:"めど",r:"",m:"目標。見通し。",ex:"解決のめどが立つ。",cat:"名詞",lv:"A9"},
+  {w:"もくろみ",r:"",m:"計画。目論見。",ex:"もくろみ通りにいかない。",cat:"名詞",lv:"A9"},
+  {w:"ひたむき",r:"",m:"一心に打ち込む様子。",ex:"ひたむきに練習する。",cat:"副詞",lv:"A10"},
+  {w:"よもや",r:"",m:"まさかそんなことはないだろうが。",ex:"よもやそんなことはあるまい。",cat:"副詞",lv:"A10"},
+  {w:"つくろう",r:"",m:"外見を整える。取り繕う。",ex:"体裁をつくろう。",cat:"動詞",lv:"A10"},
+  {w:"ありきたり",r:"",m:"よくある平凡な様子。珍しくない。",ex:"ありきたりな意見。",cat:"副詞",lv:"B1"},
+  {w:"えてして",r:"",m:"ともするとそうなりがち。",ex:"えてして失敗しやすい。",cat:"副詞",lv:"B1"},
+  {w:"とどのつまり",r:"",m:"結局。最終的に。",ex:"とどのつまり解決できなかった。",cat:"副詞",lv:"B1"},
+  {w:"おしなべて",r:"",m:"総じて。全体にわたって同じように。",ex:"おしなべて成績が上がった。",cat:"副詞",lv:"B1"},
+  {w:"ひいては",r:"",m:"さらにその先には。延いては。",ex:"ひいては社会全体の問題。",cat:"副詞",lv:"B1"},
+  {w:"とりもなおさず",r:"",m:"すなわち。言いかえれば。",ex:"それはとりもなおさず失敗だ。",cat:"副詞",lv:"B1"},
+  {w:"わだかまり",r:"",m:"すっきりしない気持ち。心のしこり。",ex:"わだかまりが残る。",cat:"名詞",lv:"B1"},
+  {w:"ほとぼり",r:"",m:"事件などの後の余熱・関心。",ex:"ほとぼりが冷める。",cat:"名詞",lv:"B1"},
+  {w:"奥の手",r:"おくのて",m:"最後の手段。秘策。",ex:"奥の手を使う。",cat:"名詞",lv:"B1"},
+  {w:"虎の子",r:"とらのこ",m:"大切にしまってある宝もの。",ex:"虎の子の貯金。",cat:"名詞",lv:"B1"},
+  {w:"いきまく",r:"",m:"激しく怒って息荒く言い立てる。",ex:"怒っていきまく。",cat:"動詞",lv:"B2"},
+  {w:"うながす",r:"",m:"早くするようにせきたてる。",ex:"出発をうながす。",cat:"動詞",lv:"B2"},
+  {w:"そそのかす",r:"",m:"うまく誘って悪いことをさせる。",ex:"友達にそそのかされた。",cat:"動詞",lv:"B2"},
+  {w:"たしなめる",r:"",m:"穏やかに叱って注意する。",ex:"子どもをたしなめる。",cat:"動詞",lv:"B2"},
+  {w:"なじむ",r:"",m:"慣れ親しむ。",ex:"環境になじむ。",cat:"動詞",lv:"B2"},
+  {w:"まどろむ",r:"",m:"うとうとする。",ex:"縁側でまどろむ。",cat:"動詞",lv:"B2"},
+  {w:"もてあそぶ",r:"",m:"弄ぶ。おもちゃにする。",ex:"感情をもてあそぶ。",cat:"動詞",lv:"B2"},
+  {w:"たじろぐ",r:"",m:"おじけづいて後ずさりする。",ex:"たじろがずに向き合う。",cat:"動詞",lv:"B2"},
+  {w:"なぞらえる",r:"",m:"他のものにたとえる。見立てる。",ex:"旅になぞらえる。",cat:"動詞",lv:"B2"},
+  {w:"ひがむ",r:"",m:"物事を悪い方にばかり解釈する。",ex:"すぐひがむ。",cat:"動詞",lv:"B2"},
+  {w:"もたげる",r:"",m:"頭などを持ち上げる。",ex:"頭をもたげる。",cat:"動詞",lv:"B2"},
+  {w:"あさましい",r:"",m:"見苦しく、さもしい様子。",ex:"あさましい行動。",cat:"形容詞",lv:"B3"},
+  {w:"いたたまれない",r:"",m:"居心地が悪くてそこにいられない。",ex:"いたたまれない気持ち。",cat:"形容詞",lv:"B3"},
+  {w:"いぶかしい",r:"",m:"疑わしく、怪しいと思う様子。",ex:"いぶかしい顔をする。",cat:"形容詞",lv:"B3"},
+  {w:"うとい",r:"",m:"よく知らない。疎遠。",ex:"流行にうとい。",cat:"形容詞",lv:"B3"},
+  {w:"こころもとない",r:"",m:"頼りなく不安な気がする。",ex:"一人では心もとない。",cat:"形容詞",lv:"B3"},
+  {w:"たゆみない",r:"",m:"怠らず努力し続ける様子。",ex:"たゆみない努力。",cat:"形容詞",lv:"B3"},
+  {w:"つれない",r:"",m:"冷たくよそよそしい様子。",ex:"つれない態度。",cat:"形容詞",lv:"B3"},
+  {w:"ものうい",r:"",m:"けだるくて気力が出ない。",ex:"ものうい午後。",cat:"形容詞",lv:"B3"},
+  {w:"やるせない",r:"",m:"やり場のない気持ち。",ex:"やるせない思い。",cat:"形容詞",lv:"B3"},
+  {w:"ゆゆしい",r:"",m:"重大で放っておけない。",ex:"ゆゆしい事態。",cat:"形容詞",lv:"B3"},
+  {w:"ものものしい",r:"",m:"いかめしく大げさな様子。",ex:"ものものしい警備。",cat:"形容詞",lv:"B3"},
+  {w:"ねたましい",r:"",m:"うらやましくて悔しい。",ex:"ねたましく思う。",cat:"形容詞",lv:"B3"},
+  {w:"たわいない",r:"",m:"取るに足らない。他愛ない。",ex:"たわいない話。",cat:"形容詞",lv:"B3"},
+  {w:"しおらしい",r:"",m:"おとなしくけなげな様子。",ex:"しおらしく謝る。",cat:"形容詞",lv:"B3"},
+  {w:"おうような",r:"",m:"大らかでゆったりした様子。",ex:"おうような態度。",cat:"形容詞",lv:"B3"},
+  {w:"うやうやしい",r:"",m:"非常にうやまった様子。",ex:"うやうやしくお辞儀する。",cat:"形容詞",lv:"B3"},
+  {w:"いかめしい",r:"",m:"威厳があって近寄りがたい。",ex:"いかめしい顔。",cat:"形容詞",lv:"B3"},
+  {w:"かいがいしい",r:"",m:"よく気がきいてせっせと働く様子。",ex:"かいがいしく働く。",cat:"形容詞",lv:"B3"},
+  {w:"さもしい",r:"",m:"卑しい。欲張りな様子。",ex:"さもしい根性。",cat:"形容詞",lv:"B3"},
+  {w:"あてどなく",r:"",m:"目当てもなく。",ex:"あてどなく歩く。",cat:"副詞",lv:"B4"},
+  {w:"おおむね",r:"",m:"だいたい。おおよそ。",ex:"おおむね順調だ。",cat:"副詞",lv:"B4"},
+  {w:"ぎくしゃく",r:"",m:"動きや関係がうまくいかない様子。",ex:"関係がぎくしゃくする。",cat:"副詞",lv:"B4"},
+  {w:"しみじみ",r:"",m:"心にしみるさま。じんわりと深く感じる様子。",ex:"しみじみとした感動。",cat:"副詞",lv:"B4"},
+  {w:"うやまう",r:"",m:"敬意をもって接する。",ex:"先生をうやまう。",cat:"動詞",lv:"B4"},
+  {w:"しなやか",r:"",m:"柔らかくしなる様子。",ex:"しなやかな体。",cat:"形容詞",lv:"B4"},
+  {w:"おおらか",r:"",m:"大らかでのびのびとした様子。",ex:"おおらかな気性。",cat:"形容詞",lv:"B4"},
+  {w:"ほがらか",r:"",m:"明るく晴れ晴れした様子。",ex:"ほがらかに笑う。",cat:"形容詞",lv:"B4"},
+  {w:"ゆかしい",r:"",m:"奥ゆかしく慕わしい様子。",ex:"ゆかしい人柄。",cat:"形容詞",lv:"B4"},
+  {w:"ひかえめ",r:"",m:"遠慮がちで控え目な様子。",ex:"ひかえめに発言する。",cat:"副詞",lv:"B4"},
+  {w:"たくみ",r:"",m:"上手で巧妙な様子。",ex:"たくみな話術。",cat:"形容詞",lv:"B4"},
+  {w:"みっともない",r:"",m:"見苦しくて恥ずかしい様子。",ex:"みっともない姿。",cat:"形容詞",lv:"B4"},
+  {w:"ひとしきり",r:"",m:"しばらく続いてから落ち着くこと。",ex:"ひとしきり泣いた。",cat:"副詞",lv:"B4"},
+];
+// 重複除去
+const seen=new Set(), WORDS=[];
+for(const w of ALL){if(!seen.has(w.w)){seen.add(w.w);WORDS.push(w);}}
+
+// ════════════════════════════════════════════════
+// SM-2 SRS ENGINE
+// ════════════════════════════════════════════════
+// state[word] = { ef, interval, nextDue, reps, totalOk, totalNg, history:[] }
+// ef = easiness factor (starts 2.5)
+// interval = days until next review
+// nextDue = Date.toDateString() of next review
+// history = [{date, rating}]
+
+const TODAY = new Date().toDateString();
+let S = JSON.parse(localStorage.getItem('wago_srs_v1') || '{}');
+let streak = parseInt(localStorage.getItem('wago_streak')||'0');
+let lastDate = localStorage.getItem('wago_lastdate')||'';
+let todayCount = parseInt(localStorage.getItem('wago_today_count')||'0');
+let todayDate  = localStorage.getItem('wago_today_date')||'';
+
+// streak update
+if(lastDate !== TODAY){
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+  if(lastDate === yesterday.toDateString()) streak++;
+  else if(lastDate !== TODAY) streak = lastDate ? 0 : streak;
+  // reset today count if new day
+  if(todayDate !== TODAY){ todayCount=0; todayDate=TODAY; localStorage.setItem('wago_today_date',TODAY); localStorage.setItem('wago_today_count','0'); }
+  lastDate=TODAY; localStorage.setItem('wago_lastdate',TODAY); localStorage.setItem('wago_streak',streak);
+}
+
+function getCard(w){ return S[w.w] || {ef:2.5,interval:0,nextDue:null,reps:0,totalOk:0,totalNg:0,history:[]}; }
+function isDue(w){ const c=getCard(w); if(!c.nextDue) return true; return c.nextDue<=TODAY; }
+function isNew(w){ return !S[w.w]; }
+
+// SM-2 update
+function sm2Update(w, rating){
+  // rating: 0=blackout, 1=hard, 2=good, 3=easy
+  let c = getCard(w);
+  const q = [0,2,4,5][rating]; // map to SM-2 quality 0-5
+  if(!c.history) c.history=[];
+  c.history.push({date:TODAY, rating});
+
+  if(q<3){
+    // failed — reset
+    c.reps=0; c.interval=1; c.totalNg++;
+  } else {
+    c.totalOk++;
+    if(c.reps===0) c.interval=1;
+    else if(c.reps===1) c.interval=6;
+    else c.interval=Math.round(c.interval * c.ef);
+    c.reps++;
+    // update EF
+    c.ef = Math.max(1.3, c.ef + 0.1 - (5-q)*(0.08+(5-q)*0.02));
+  }
+  const next = new Date(); next.setDate(next.getDate()+c.interval);
+  c.nextDue = next.toDateString();
+  S[w.w]=c;
+  todayCount++; localStorage.setItem('wago_today_count',todayCount); localStorage.setItem('wago_today_date',TODAY);
+  saveS();
+}
+
+function saveS(){ localStorage.setItem('wago_srs_v1',JSON.stringify(S)); }
+function shuffle(a){ return a.sort(()=>Math.random()-.5); }
+
+// ════════════════════════════════════════════════
+// COMPUTED LISTS
+// ════════════════════════════════════════════════
+function getDue(){ return WORDS.filter(isDue); }
+function getNew(){ return WORDS.filter(isNew); }
+function getLearned(){ return WORDS.filter(w=>{ const c=S[w.w]; return c&&c.reps>=2&&c.interval>=6; }); }
+function getHard(){ return WORDS.filter(w=>{ const c=S[w.w]; if(!c)return false; const tot=c.totalOk+c.totalNg; return tot>=3 && c.totalNg/tot>0.4; }); }
+function accRate(){ let ok=0,ng=0; WORDS.forEach(w=>{ const c=S[w.w]; if(c){ok+=c.totalOk||0;ng+=c.totalNg||0;} }); return {ok,ng,pct:ok+ng>0?Math.round(ok/(ok+ng)*100):null}; }
+
+// ════════════════════════════════════════════════
+// SCREEN NAV
+// ════════════════════════════════════════════════
+function show(id){ document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); window.scrollTo(0,0); }
+function goHome(){ updateHome(); show('s-home'); }
+
+// ════════════════════════════════════════════════
+// HOME
+// ════════════════════════════════════════════════
+function updateHome(){
+  const due=getDue(), nw=getNew(), lrn=getLearned(), hrd=getHard();
+  document.getElementById('h-streak').textContent=streak;
+  document.getElementById('h-learned').textContent=lrn.length;
+  document.getElementById('h-review').textContent=WORDS.filter(w=>S[w.w]&&!isNew(w)).length;
+  document.getElementById('h-due').textContent=due.length;
+  document.getElementById('h-new').textContent=nw.length;
+  document.getElementById('srs-badge').textContent=(due.length+Math.min(nw.length,10))+'語';
+  document.getElementById('hard-badge').textContent=hrd.length+'語';
+
+  const total = due.length + Math.min(nw.length, 10);
+  document.getElementById('today-title').textContent = total>0 ? '今日の復習・新規' : '今日のノルマ達成！';
+  document.getElementById('today-sub').textContent = total>0 ? `期限${due.length}語 ＋ 新規${Math.min(nw.length,10)}語` : `本日 ${todayCount}語 学習しました 🎉`;
+  const badge = document.getElementById('today-badge');
+  badge.textContent = total>0 ? `${total}語` : '完了✓';
+  badge.className = 'today-badge' + (total===0?' done':'');
+}
+
+// ════════════════════════════════════════════════
+// SRS SESSION
+// ════════════════════════════════════════════════
+let srsQ=[], srsIdx=0, srsFlipped_=false;
+
+function goSRS(){
+  const due=getDue();
+  const nw=shuffle(getNew()).slice(0,Math.max(0,10-due.length));
+  srsQ = shuffle([...due,...nw]);
+  if(!srsQ.length){ showToast('今日の復習は完了！また明日ね😊'); return; }
+  srsIdx=0; srsFlipped_=false;
+  show('s-srs'); renderSRS();
+}
+
+function renderSRS(){
+  if(srsIdx>=srsQ.length){ updateHome(); show('s-home'); showToast(`🎉 セッション完了！${srsQ.length}語学習したよ`); return; }
+  const w=srsQ[srsIdx];
+  const c=getCard(w);
+  document.getElementById('srs-word').textContent=w.w;
+  document.getElementById('srs-read').textContent=w.r?`（${w.r}）`:'';
+  document.getElementById('srs-ex-front').textContent=w.ex?`例：${maskEx(w)}`:'';
+  document.getElementById('srs-mean').textContent=w.m;
+  document.getElementById('srs-ex').textContent=w.ex?`例：${w.ex}`:'';
+  // badge
+  const b=document.getElementById('srs-badge2');
+  const tot=c.totalOk+c.totalNg;
+  if(!S[w.w]){ b.textContent='🆕 NEW'; b.style.background='var(--pur-l)'; b.style.color='var(--pur)'; }
+  else if(isDue(w)&&c.interval>0){ b.textContent=`📅 間隔${c.interval}日`; b.style.background='var(--sun-l)'; b.style.color='var(--sun)'; }
+  else{ b.textContent=`✓ ${c.interval}日間隔`; b.style.background='var(--grn-l)'; b.style.color='var(--grn)'; }
+  document.getElementById('srs-pill').textContent=`${srsIdx+1}/${srsQ.length}`;
+  document.getElementById('srs-prog').style.width=`${(srsIdx/srsQ.length)*100}%`;
+  // interval previews
+  document.getElementById('r2-int').textContent=`${Math.round(Math.max(1,c.interval)*c.ef)}日後`;
+  document.getElementById('r3-int').textContent=`${Math.round(Math.max(1,c.interval)*c.ef*1.3)}日後`;
+  srsFlipped_=false;
+  document.getElementById('srs-ci').classList.remove('flip');
+  const rr=document.getElementById('rating-row');
+  rr.style.opacity='0.4'; rr.style.pointerEvents='none';
+  document.getElementById('rating-hint').style.opacity='0.4';
+}
+
+function srsFlip(){
+  srsFlipped_=!srsFlipped_;
+  document.getElementById('srs-ci').classList.toggle('flip',srsFlipped_);
+  if(srsFlipped_){
+    const rr=document.getElementById('rating-row');
+    rr.style.opacity='1'; rr.style.pointerEvents='auto';
+    document.getElementById('rating-hint').style.opacity='1';
+  }
+}
+
+function srsRate(r){
+  sm2Update(srsQ[srsIdx], r);
+  if(r>=2) shootStar(r===3?'⭐':'✨');
+  showToast(['😵 すぐ再出題','😓 1日後に出題','🤔 しばらくしたら出題','⭐ よく覚えてる！'][r]);
+  setTimeout(()=>{ srsIdx++; renderSRS(); }, 500);
+}
+
+// ════════════════════════════════════════════════
+// QUIZ
+// ════════════════════════════════════════════════
+let qPool=[], qIdx=0, qType='choice', qOk=0, qAns=false, qMode='all';
+
+function goQuiz(mode){
+  qMode=mode;
+  const pool = mode==='hard' ? getHard() : WORDS;
+  if(pool.length<4){ showToast('語句が少なすぎます！'); return; }
+  qPool=shuffle([...pool]); qIdx=0; qOk=0;
+  document.getElementById('q-title').textContent=mode==='hard'?'🔥 苦手クイズ':'クイズ';
+  renderQ(); show('s-quiz');
+}
+function goHard(){ goQuiz('hard'); }
+
+function setQT(t,el){ qType=t; document.querySelectorAll('.qtbtn').forEach(b=>b.classList.remove('on')); el.classList.add('on'); qPool=shuffle([...qPool]); qIdx=0; qOk=0; renderQ(); }
+
+function renderQ(){
+  if(qIdx>=qPool.length){ showResult(); return; }
+  qAns=false;
+  const w=qPool[qIdx];
+  document.getElementById('q-pill').textContent=`${qIdx+1}/${qPool.length}`;
+  document.getElementById('q-prog').style.width=`${(qIdx/qPool.length)*100}%`;
+  document.getElementById('fb').style.display='none';
+  document.getElementById('nxtbtn').style.display='none';
+  if(qType==='choice'){
+    document.getElementById('qlbl').textContent='この意味の語句はどれ？';
+    document.getElementById('qtxt').textContent=w.m;
+    document.getElementById('qsub').textContent=w.ex?`例：${w.ex}`:'';
+    document.getElementById('frow').style.display='none';
+    renderChoices(mkChoices(w,'w'),w.w);
+  } else if(qType==='fill'){
+    document.getElementById('qlbl').textContent='この語句の意味は？（キーワードで）';
+    document.getElementById('qtxt').textContent=w.w+(w.r?`（${w.r}）`:'');
+    document.getElementById('qsub').textContent='';
+    document.getElementById('cgrid').innerHTML='';
+    document.getElementById('frow').style.display='flex';
+    document.getElementById('finp').value=''; document.getElementById('finp').disabled=false;
+    setTimeout(()=>document.getElementById('finp').focus(),80);
+  } else {
+    document.getElementById('qlbl').textContent='この語句の意味はどれ？';
+    document.getElementById('qtxt').textContent=w.w+(w.r?`（${w.r}）`:'');
+    document.getElementById('qsub').textContent='';
+    document.getElementById('frow').style.display='none';
+    renderChoices(mkChoices(w,'m'),w.m);
+  }
+}
+
+function mkChoices(w,key){ const pool=WORDS.filter(x=>x[key]!==w[key]); return shuffle([w[key],...shuffle(pool).slice(0,3).map(x=>x[key])]); }
+function maskEx(w){ if(!w.ex) return ''; return w.ex.replace(new RegExp(w.w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'),'＿＿＿'); }
+
+function renderChoices(cs,correct){
+  const g=document.getElementById('cgrid'); g.innerHTML='';
+  cs.forEach(c=>{ const b=document.createElement('button'); b.className='ch'; b.textContent=c; b.onclick=()=>chkChoice(c,correct,b); g.appendChild(b); });
+}
+
+function chkChoice(sel,correct,btn){
+  if(qAns)return; qAns=true;
+  document.querySelectorAll('.ch').forEach(b=>{ b.disabled=true; if(b.textContent===correct)b.classList.add('ok'); });
+  const ok=sel===correct;
+  if(!ok)btn.classList.add('ng');
+  markQ(qPool[qIdx],ok); if(ok){qOk++;shootStar('✨');}
+  showFB(ok,correct); document.getElementById('nxtbtn').style.display='block';
+}
+
+function submitF(){
+  if(qAns)return;
+  const val=document.getElementById('finp').value.trim(); if(!val)return;
+  qAns=true; document.getElementById('finp').disabled=true;
+  const w=qPool[qIdx];
+  const ok=w.m.includes(val)&&val.length>=2;
+  markQ(w,ok); if(ok){qOk++;shootStar('✨');}
+  showFB(ok,w.m); document.getElementById('nxtbtn').style.display='block';
+}
+
+function markQ(w,ok){
+  // quizはSRSに軽く反映（ok:1点, ng:0点のrating）
+  if(ok){ sm2Update(w,2); } else { sm2Update(w,0); }
+}
+
+function showFB(ok,ans){
+  const fb=document.getElementById('fb');
+  const w=qPool[qIdx];
+  fb.className='fb '+(ok?'ok':'ng');
+  fb.innerHTML=(ok?'⭐ 正解！すばらしい！':`😓 正解は「${ans}」だよ`)+(w.ex?`<div style="margin-top:6px;font-size:.8rem;opacity:.85;font-weight:400">例：${w.ex}</div>`:'');
+  fb.style.display='block';
+}
+function nextQ(){ qIdx++; renderQ(); }
+
+function showResult(){
+  const pct=Math.round(qOk/qPool.length*100);
+  document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
+  document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
+  document.getElementById('rsco').innerHTML=`${qPool.length}問中 <strong>${qOk}問</strong> 正解（${pct}%）`;
+  document.getElementById('rovl').classList.add('on');
+  if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
+}
+function closeResult(){ document.getElementById('rovl').classList.remove('on'); qPool=shuffle([...qPool]); qIdx=0; qOk=0; renderQ(); }
+
+// ════════════════════════════════════════════════
+// STATS
+// ════════════════════════════════════════════════
+function goStats(){
+  const {ok,ng,pct}=accRate();
+  document.getElementById('acc-ok').textContent=ok;
+  document.getElementById('acc-ng').textContent=ng;
+  document.getElementById('acc-streak').textContent=streak;
+  document.getElementById('acc-today').textContent=todayCount;
+  if(pct!=null){
+    document.getElementById('acc-big').textContent=pct+'%';
+    document.getElementById('ring-txt').textContent=pct+'%';
+    const circ=251.2, offset=circ*(1-pct/100);
+    document.getElementById('ring-fg').style.strokeDashoffset=offset;
+  } else {
+    document.getElementById('acc-big').textContent='—';
+    document.getElementById('ring-txt').textContent='—';
+  }
+
+  // level bars
+  const lvls=['A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','B1','B2','B3','B4'];
+  const hb=document.getElementById('hist-bars'); hb.innerHTML='';
+  lvls.forEach(lv=>{
+    const ws=WORDS.filter(w=>w.lv===lv);
+    let tok=0,tng=0;
+    ws.forEach(w=>{ const c=S[w.w]; if(c){tok+=c.totalOk||0;tng+=c.totalNg||0;} });
+    const tot=tok+tng; if(!tot)return;
+    const p=Math.round(tok/tot*100);
+    const col=p>=80?'var(--grn)':p>=60?'var(--sun)':'var(--red)';
+    hb.innerHTML+=`<div class="hbar-row"><div class="hbar-label">${lv}</div><div class="hbar-track"><div class="hbar-fill" style="width:${p}%;background:${col}"></div></div><div class="hbar-val">${p}%</div></div>`;
+  });
+  if(!hb.innerHTML) hb.innerHTML='<div style="color:#aaa;font-size:.85rem;padding:8px">まだデータがありません</div>';
+
+  // due schedule
+  const dl=document.getElementById('due-list'); dl.innerHTML='';
+  const sorted=[...WORDS].sort((a,b)=>{
+    const ca=getCard(a), cb=getCard(b);
+    if(!ca.nextDue && !cb.nextDue) return 0;
+    if(!ca.nextDue) return -1;
+    if(!cb.nextDue) return 1;
+    return new Date(ca.nextDue)-new Date(cb.nextDue);
+  }).slice(0,15);
+  sorted.forEach(w=>{
+    const c=getCard(w);
+    let whenClass,whenText;
+    if(!c.nextDue){ whenClass='due-new'; whenText='🆕 NEW'; }
+    else if(c.nextDue<=TODAY){ whenClass='due-today'; whenText='🔴 今日！'; }
+    else {
+      const diff=Math.round((new Date(c.nextDue)-new Date(TODAY))/(1000*60*60*24));
+      if(diff<=3){ whenClass='due-soon'; whenText=`⚡ ${diff}日後`; }
+      else { whenClass='due-later'; whenText=`✓ ${diff}日後`; }
+    }
+    dl.innerHTML+=`<div class="due-item"><div class="due-word">${w.w}<span style="font-size:.7rem;color:#aaa;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:400"> ${w.m.slice(0,15)}…</span></div><div class="due-when ${whenClass}">${whenText}</div></div>`;
+  });
+
+  show('s-stats');
+}
+
+// ════════════════════════════════════════════════
+// LIST
+// ════════════════════════════════════════════════
+let listLv='all';
+function goList(){ renderList(); show('s-list'); }
+function renderList(){
+  const q=document.getElementById('sinp').value.trim();
+  const filtered=WORDS.filter(w=>(!q||w.w.includes(q)||w.m.includes(q))&&(listLv==='all'||w.lv===listLv));
+  document.getElementById('list-pill').textContent=filtered.length+'語';
+  const el=document.getElementById('list-area'); el.innerHTML='';
+  filtered.forEach(w=>{
+    const c=getCard(w);
+    const tot=c.totalOk+c.totalNg;
+    const pct=tot>0?Math.round(c.totalOk/tot*100):null;
+    const mastery=c.interval>=21?100:c.interval>=7?70:c.interval>=3?40:c.interval>=1?20:0;
+    const icon=mastery>=70?'⭐':tot>0&&(pct||0)<50?'🔥':'📖';
+    const barColor=mastery>=70?'var(--grn)':mastery>=40?'var(--sun)':'var(--red)';
+    let dueStr='';
+    if(!S[w.w]) dueStr='🆕';
+    else if(isDue(w)) dueStr='🔴今日';
+    else { const diff=Math.round((new Date(c.nextDue)-new Date(TODAY))/(1000*60*60*24)); dueStr=`📅${diff}日後`; }
+    const d=document.createElement('div'); d.className='wcard';
+    d.innerHTML=`<div class="wi">${icon}</div><div style="flex:1;min-width:0"><div class="ww">${w.w}</div><div class="wr">${w.r||''}</div><div class="wm">${w.m}</div><div class="wtags"><span class="tag tc">${w.cat}</span><span class="tag tl">Lv.${w.lv}</span>${pct!=null?`<span class="tag ts">正答${pct}%</span>`:''}<span class="tag" style="background:#f0f0f0;color:#888">${dueStr}</span></div><div class="srs-bar-wrap"><div class="srs-bar" style="width:${mastery}%;background:${barColor}"></div></div></div>`;
+    el.appendChild(d);
+  });
+}
+
+// filters
+(()=>{
+  const lvs=['all','A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','B1','B2','B3','B4'];
+  const r=document.getElementById('flrow');
+  lvs.forEach(lv=>{
+    const b=document.createElement('button'); b.className='flbtn'+(lv==='all'?' on':'');
+    b.textContent=lv==='all'?'すべて':lv;
+    b.onclick=()=>{ listLv=lv; document.querySelectorAll('.flbtn').forEach(x=>x.classList.remove('on')); b.classList.add('on'); renderList(); };
+    r.appendChild(b);
+  });
+})();
+
+// ════════════════════════════════════════════════
+// FX
+// ════════════════════════════════════════════════
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2200); }
+function shootStar(e){ const s=document.createElement('div'); s.className='shoot'; s.textContent=e; s.style.left=Math.random()*60+20+'%'; s.style.top=Math.random()*40+30+'%'; document.body.appendChild(s); setTimeout(()=>s.remove(),900); }
+(()=>{ const c=document.getElementById('stars'); ['✦','✧','⭐','🌟','✨'].forEach(e=>{ for(let i=0;i<3;i++){ const s=document.createElement('div'); s.className='star'; s.textContent=e; s.style.left=Math.random()*100+'%'; s.style.top=Math.random()*100+'%'; s.style.fontSize=(12+Math.random()*10)+'px'; s.style.animationDelay=Math.random()*10+'s'; s.style.animationDuration=(8+Math.random()*8)+'s'; c.appendChild(s); } }); })();
+
+// INIT
+updateHome();
+</script>
+</body>
+</html>
