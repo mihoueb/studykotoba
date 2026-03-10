@@ -625,7 +625,7 @@ function renderQ(){
   if(qType==='choice'){
     document.getElementById('qlbl').textContent='この意味の語句はどれ？';
     document.getElementById('qtxt').textContent=w.m;
-    document.getElementById('qsub').textContent=w.ex?`例：${w.ex}`:'';
+    document.getElementById('qsub').textContent=w.ex?`例：${maskEx(w.ex,w.w)}`:'';
     document.getElementById('frow').style.display='none';
     renderChoices(mkChoices(w,'w'),w.w);
   } else if(qType==='fill'){
@@ -645,6 +645,13 @@ function renderQ(){
   }
 }
 
+function maskEx(ex, word){
+  // 語句・読みの両方を伏せる（長さに合わせた＿の数）
+  let masked = ex;
+  const blanks = '＿'.repeat(Math.max(2, word.length));
+  masked = masked.replace(new RegExp(word, 'g'), blanks);
+  return masked;
+}
 function mkChoices(w,key){ const pool=WORDS.filter(x=>x[key]!==w[key]); return shuffle([w[key],...shuffle(pool).slice(0,3).map(x=>x[key])]); }
 function renderChoices(cs,correct){ const g=document.getElementById('cgrid'); g.innerHTML=''; cs.forEach(c=>{ const b=document.createElement('button'); b.className='ch'; b.textContent=c; b.onclick=()=>chkChoice(c,correct,b); g.appendChild(b); }); }
 function chkChoice(sel,correct,btn){
