@@ -646,11 +646,18 @@ function renderQ(){
 }
 
 function maskEx(ex, word){
-  // 語句・読みの両方を伏せる（長さに合わせた＿の数）
-  let masked = ex;
   const blanks = '＿'.repeat(Math.max(2, word.length));
-  masked = masked.replace(new RegExp(word, 'g'), blanks);
-  return masked;
+  // 完全一致
+  if(ex.includes(word)) return ex.replace(new RegExp(word, 'g'), blanks);
+  // 語幹マッチング：語尾を1文字ずつ削って前方一致を試みる
+  for(let cut = 1; cut <= Math.min(3, word.length - 2); cut++){
+    const stem = word.slice(0, word.length - cut);
+    const re = new RegExp(stem + '[ぁ-ん]*', 'g');
+    if(re.test(ex)){
+      return ex.replace(new RegExp(stem + '[ぁ-ん]*', 'g'), blanks);
+    }
+  }
+  return ex;
 }
 function mkChoices(w,key){ const pool=WORDS.filter(x=>x[key]!==w[key]); return shuffle([w[key],...shuffle(pool).slice(0,3).map(x=>x[key])]); }
 function renderChoices(cs,correct){ const g=document.getElementById('cgrid'); g.innerHTML=''; cs.forEach(c=>{ const b=document.createElement('button'); b.className='ch'; b.textContent=c; b.onclick=()=>chkChoice(c,correct,b); g.appendChild(b); }); }
