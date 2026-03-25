@@ -66,6 +66,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 .m-stat{background:linear-gradient(135deg,#7c5cbf,#a07de0);}
 .m-list{background:linear-gradient(135deg,#3a7bd5,#5a9be8);}
 .m-kotowaza{background:linear-gradient(135deg,#8b5a2b,#c49a6c);}
+.m-gairaigo{background:linear-gradient(135deg,#1a6e3c,#2ecc71);}
 
 /* ── MODE SELECT ── */
 .mode-select{width:100%;max-width:400px;margin-top:12px;}
@@ -124,6 +125,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 .qtxt{font-family:'Kaisei Decol',serif;font-size:1.5rem;font-weight:700;line-height:1.5;color:var(--deep);}
 .qsub{font-size:.78rem;color:#888;margin-top:7px;line-height:1.6;}
 .cgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:100%;max-width:460px;margin-bottom:12px;}
+.cgrid6{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:460px;margin-bottom:12px;}
 .ch{padding:14px 12px;background:white;border:2px solid transparent;border-radius:15px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.85rem;font-weight:700;text-align:center;line-height:1.5;cursor:pointer;box-shadow:var(--sh);transition:all .15s;color:var(--deep);}
 .ch:active{transform:scale(.96);}
 .ch.ok{background:var(--grn-l);border-color:var(--grn);color:var(--grn);}
@@ -282,6 +284,12 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
     <span class="badge" id="kotowaza-badge">0問</span>
     <span class="ma">›</span>
   </button>
+  <button class="mbtn m-gairaigo" onclick="goGairaigo()">
+    <span class="mi">🌍</span>
+    <div class="mt"><div>外来語クイズ</div><div style="font-size:.72rem;opacity:.8;font-weight:400">例文・意味の6択で特訓</div></div>
+    <span class="badge" id="gairaigo-badge">0語</span>
+    <span class="ma">›</span>
+  </button>
 </div>
 
 <!-- ═══ SRS SESSION ═══ -->
@@ -438,14 +446,56 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
   <button class="nxtbtn" id="koto-nxtbtn" onclick="nextKoto()">つぎの問題 →</button>
 </div>
 
+<!-- ═══ GAIRAIGO MODE SELECT ═══ -->
+<div class="scr" id="s-gairaigo-select">
+  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">🌍 外来語クイズ</div></div>
+  <div class="mode-select">
+    <div class="mode-select-title">モードを選んでね</div>
+    <button class="msbtn ms-mean" onclick="startGairaigoMode('ex')">
+      <span class="msi">📝</span>
+      <div class="mst"><div>例文→外来語</div><div class="mss">例文の（）に入る外来語を6択で選ぶ</div></div>
+      <span style="font-size:1.1rem;opacity:.5">›</span>
+    </button>
+    <button class="msbtn ms-rev" onclick="startGairaigoMode('mean')">
+      <span class="msi">🔁</span>
+      <div class="mst"><div>外来語→意味</div><div class="mss">外来語を見て意味を6択で選ぶ</div></div>
+      <span style="font-size:1.1rem;opacity:.5">›</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ GAIRAIGO ═══ -->
+<div class="scr" id="s-gairaigo">
+  <div class="hdr"><button class="bk" onclick="quitGairaigo()">←</button><div class="htitle">🌍 外来語クイズ</div><div class="hpill" id="gairaigo-timer" style="background:linear-gradient(135deg,#1a6e3c,#2ecc71);color:white;font-size:1rem;padding:6px 16px">5:00</div></div>
+  <div class="pbar"><div class="pfill" id="gairaigo-prog"></div></div>
+  <div style="display:flex;gap:8px;width:100%;max-width:460px;margin-bottom:10px">
+    <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
+      <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--grn)" id="gairaigo-ok">0</div>
+      <div style="font-size:.62rem;font-weight:800;color:#aaa">⭐ 正解</div>
+    </div>
+    <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
+      <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--red)" id="gairaigo-ng">0</div>
+      <div style="font-size:.62rem;font-weight:800;color:#aaa">😓 ミス</div>
+    </div>
+    <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
+      <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--pur)" id="gairaigo-total">0</div>
+      <div style="font-size:.62rem;font-weight:800;color:#aaa">📝 合計</div>
+    </div>
+  </div>
+  <div class="qbox"><div class="qlbl" id="gairaigo-qlbl">問題</div><div class="qtxt" id="gairaigo-qtxt" style="font-size:1.1rem;line-height:1.7">—</div><div class="qsub" id="gairaigo-qsub" style="margin-top:6px;font-size:.8rem;color:#888"></div></div>
+  <div class="cgrid6" id="gairaigo-cgrid"></div>
+  <div class="fb" id="gairaigo-fb"></div>
+  <button class="nxtbtn" id="gairaigo-nxtbtn" onclick="nextGairaigo()">つぎの問題 →</button>
+</div>
+
 <!-- RESULT -->
 <div class="rovl" id="rovl">
   <div class="rcard">
     <div class="remo" id="remo">🎉</div>
     <div class="rtit" id="rtit">おつかれさま！</div>
     <div class="rsco" id="rsco"></div>
-    <button class="rbtn2" onclick="closeKotoResult()">もう一度！</button>
-    <button class="rbtn2 s" onclick="goHome();closeKotoResult()">ホームへ</button>
+    <button class="rbtn2" id="result-retry-btn" onclick="retryResult()">もう一度！</button>
+    <button class="rbtn2 s" onclick="goHome();closeResult()">ホームへ</button>
   </div>
 </div>
 
@@ -758,12 +808,13 @@ function showResult(){
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
   document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${qOk}問</strong> ／ ミス <strong style="color:var(--red)">${qNg}問</strong><br>正答率 <strong>${pct}%</strong>`;
+  document.getElementById('result-retry-btn').onclick = ()=>{ closeResult(); startQuizMode(qType); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
   flushQueue();
 }
-function closeResult(){ document.getElementById('rovl').classList.remove('on'); startQuizMode(qType); }
-function closeKotoResult(){ document.getElementById('rovl').classList.remove('on'); startKoto(); show('s-kotowaza'); }
+function closeResult(){ document.getElementById('rovl').classList.remove('on'); }
+function retryResult(){ /* ボタンのonclickで上書きされる */ }
 
 // ════════════════════════════════════════════════
 // STATS
@@ -995,6 +1046,172 @@ function showKotoResult(){
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
   document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${kotoOk}問</strong> ／ ミス <strong style="color:var(--red)">${kotoNg}問</strong><br>正答率 <strong>${pct}%</strong>`;
+  document.getElementById('result-retry-btn').onclick = ()=>{ closeResult(); startKoto(); show('s-kotowaza'); };
+  document.getElementById('rovl').classList.add('on');
+  if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
+  flushQueue();
+}
+
+// ════════════════════════════════════════════════
+// GAIRAIGO
+// ════════════════════════════════════════════════
+let GAIRAIGO = [];
+let SG = {}; // スコア管理
+let gPool=[], gIdx=0, gOk=0, gNg=0, gAns=false, gMode='ex';
+let gTimerSec=300, gTimerInterval=null;
+
+async function loadGairaigo(){
+  if(GAIRAIGO.length) return;
+  document.getElementById('loading-overlay').classList.remove('hidden');
+  document.querySelector('.loading-text').textContent='外来語データを読み込み中…';
+  try {
+    const res = await fetch(`${SHEET_URL}?type=gairaigo`);
+    const data = await res.json();
+    GAIRAIGO = data.map(row => ({
+      w: row['外来語'] || row.word || '',
+      r: row['読み'] || row.reading || '',
+      m: row['意味'] || row.meaning || '',
+      ex: row['例文'] || row.example || '',
+      lv: row['レベル'] || row.level || '',
+      rowIndex: row.rowIndex,
+      _ok: parseInt(row.correctCount) || 0,
+      _total: parseInt(row.totalCount) || 0,
+    })).filter(x => x.w);
+    SG = JSON.parse(localStorage.getItem('gairaigo_v1') || '{}');
+    GAIRAIGO.forEach(g => {
+      if(!SG[g.w]) SG[g.w] = {totalOk:0, totalNg:0};
+      SG[g.w].totalOk = g._ok;
+      SG[g.w].totalNg = g._total - g._ok;
+    });
+    document.getElementById('gairaigo-badge').textContent = GAIRAIGO.length + '語';
+  } catch(e) {
+    showToast('⚠️ 外来語の読み込みに失敗しました');
+    console.error(e);
+  }
+  document.getElementById('loading-overlay').classList.add('hidden');
+  document.querySelector('.loading-text').textContent='語句データを読み込み中…';
+}
+
+async function goGairaigo(){
+  await loadGairaigo();
+  if(!GAIRAIGO.length) return;
+  show('s-gairaigo-select');
+}
+
+function startGairaigoMode(mode){
+  gMode = mode;
+  // exモードは例文がある語だけ
+  const pool = gMode==='ex'
+    ? GAIRAIGO.filter(g => g.ex && g.ex.trim() !== '')
+    : GAIRAIGO;
+  if(pool.length < 6){ showToast('データが少なすぎます'); return; }
+  gPool = shuffle([...pool, ...pool, ...pool]);
+  gIdx=0; gOk=0; gNg=0; gTimerSec=300;
+  updateGairaigoScore();
+  const el=document.getElementById('gairaigo-timer');
+  el.style.background='linear-gradient(135deg,#1a6e3c,#2ecc71)';
+  el.textContent='5:00';
+  clearInterval(gTimerInterval);
+  gTimerInterval=setInterval(()=>{
+    gTimerSec--;
+    const m=Math.floor(gTimerSec/60), s=gTimerSec%60;
+    el.textContent=`${m}:${String(s).padStart(2,'0')}`;
+    if(gTimerSec<=30) el.style.background='linear-gradient(135deg,#e05252,#f07070)';
+    else if(gTimerSec<=60) el.style.background='linear-gradient(135deg,#e05252,#f5a623)';
+    if(gTimerSec<=0){ clearInterval(gTimerInterval); showGairaigoResult(); }
+  },1000);
+  show('s-gairaigo');
+  renderGairaigo();
+}
+
+function quitGairaigo(){ clearInterval(gTimerInterval); flushQueue(); show('s-gairaigo-select'); }
+
+function updateGairaigoScore(){
+  document.getElementById('gairaigo-ok').textContent=gOk;
+  document.getElementById('gairaigo-ng').textContent=gNg;
+  document.getElementById('gairaigo-total').textContent=gOk+gNg;
+}
+
+function renderGairaigo(){
+  if(gIdx >= gPool.length){ gPool=shuffle(gPool); gIdx=0; }
+  gAns=false;
+  const g = gPool[gIdx];
+  document.getElementById('gairaigo-fb').style.display='none';
+  document.getElementById('gairaigo-nxtbtn').style.display='none';
+  document.getElementById('gairaigo-prog').style.width=`${(gIdx/gPool.length)*100}%`;
+
+  if(gMode==='ex'){
+    // 例文の外来語を（　）に置き換えて表示
+    const masked = g.ex.replace(new RegExp(g.w, 'g'), '（　　）');
+    document.getElementById('gairaigo-qlbl').textContent='（　　）に入る外来語はどれ？';
+    document.getElementById('gairaigo-qtxt').textContent=masked;
+    document.getElementById('gairaigo-qsub').textContent='';
+    const choices = makeGairaigoChoices(g, 'w');
+    renderGairaigoChoices(choices, g.w);
+  } else {
+    document.getElementById('gairaigo-qlbl').textContent='この外来語の意味はどれ？';
+    document.getElementById('gairaigo-qtxt').textContent=g.w;
+    document.getElementById('gairaigo-qsub').textContent=g.r ? `（${g.r}）` : '';
+    const choices = makeGairaigoChoices(g, 'm');
+    renderGairaigoChoices(choices, g.m);
+  }
+}
+
+function makeGairaigoChoices(g, key){
+  // 同レベルから優先的に選ぶ（6択）
+  const sameLv = GAIRAIGO.filter(x => x[key] !== g[key] && x.lv === g.lv);
+  const others = GAIRAIGO.filter(x => x[key] !== g[key] && x.lv !== g.lv);
+  const pool = shuffle([...sameLv, ...others]);
+  return shuffle([g[key], ...pool.slice(0,5).map(x=>x[key])]);
+}
+
+function renderGairaigoChoices(choices, correct){
+  const g2 = document.getElementById('gairaigo-cgrid'); g2.innerHTML='';
+  choices.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='ch';
+    b.style.fontSize = gMode==='mean' ? '.78rem' : '.88rem';
+    b.textContent=c;
+    b.onclick=()=>chkGairaigo(c, correct, b);
+    g2.appendChild(b);
+  });
+}
+
+function chkGairaigo(sel, correct, btn){
+  if(gAns) return; gAns=true;
+  document.querySelectorAll('#gairaigo-cgrid .ch').forEach(b=>{ b.disabled=true; if(b.textContent===correct)b.classList.add('ok'); });
+  const ok = sel===correct;
+  if(!ok) btn.classList.add('ng');
+  const g = gPool[gIdx];
+  if(!SG[g.w]) SG[g.w]={totalOk:0,totalNg:0};
+  if(ok){ gOk++; SG[g.w].totalOk++; shootStar('✨'); } else { gNg++; SG[g.w].totalNg++; }
+  localStorage.setItem('gairaigo_v1', JSON.stringify(SG));
+  updateGairaigoScore();
+  updateQueue.push({ type:'gairaigo', rowIndex: g.rowIndex, correctCount: SG[g.w].totalOk, totalCount: SG[g.w].totalOk+SG[g.w].totalNg });
+  const fb=document.getElementById('gairaigo-fb');
+  fb.className='fb '+(ok?'ok':'ng');
+  if(ok){
+    fb.innerHTML = `⭐ 正解！`;
+    if(gMode==='ex') fb.innerHTML += `<div style="margin-top:5px;font-size:.8rem;font-weight:400">${g.m}</div>`;
+    else fb.innerHTML += `<div style="margin-top:5px;font-size:.8rem;font-weight:400">${g.ex||''}</div>`;
+  } else {
+    fb.innerHTML = `😓 正解は「${correct}」だよ`;
+    if(gMode==='ex') fb.innerHTML += `<div style="margin-top:5px;font-size:.8rem;font-weight:400">${g.m}</div>`;
+    else fb.innerHTML += `<div style="margin-top:5px;font-size:.8rem;font-weight:400">${g.ex||''}</div>`;
+  }
+  fb.style.display='block';
+  if(ok){ setTimeout(()=>nextGairaigo(), 500); } else { document.getElementById('gairaigo-nxtbtn').style.display='block'; }
+}
+
+function nextGairaigo(){ gIdx++; renderGairaigo(); }
+
+function showGairaigoResult(){
+  clearInterval(gTimerInterval);
+  const total=gOk+gNg, pct=total>0?Math.round(gOk/total*100):0;
+  document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
+  document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
+  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${gOk}問</strong> ／ ミス <strong style="color:var(--red)">${gNg}問</strong><br>正答率 <strong>${pct}%</strong>`;
+  document.getElementById('result-retry-btn').onclick = ()=>{ closeResult(); startGairaigoMode(gMode); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
   flushQueue();
