@@ -253,19 +253,13 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 
   <button class="mbtn m-srs" onclick="goSRS()">
     <span class="mi">🧠</span>
-    <div class="mt"><div>SRS復習セッション</div><div style="font-size:.72rem;opacity:.8;font-weight:400">今日期限の語句を賢く復習</div></div>
+    <div class="mt"><div>SRS復習セッション</div><div style="font-size:.72rem;opacity:.8;font-weight:400">全語句からランダムに復習</div></div>
     <span class="badge" id="srs-badge">0語</span>
     <span class="ma">›</span>
   </button>
   <button class="mbtn m-quiz" onclick="goQuiz('all')">
     <span class="mi">📝</span>
-    <div class="mt"><div>クイズに挑戦！</div><div style="font-size:.72rem;opacity:.8;font-weight:400">四択・穴埋め・意味あてで練習</div></div>
-    <span class="ma">›</span>
-  </button>
-  <button class="mbtn m-hard" onclick="goHard()">
-    <span class="mi">🔥</span>
-    <div class="mt"><div>苦手集中練習</div><div style="font-size:.72rem;opacity:.8;font-weight:400">正答率の低い語句を特訓</div></div>
-    <span class="badge" id="hard-badge">0語</span>
+    <div class="mt"><div>和語クイズ</div><div style="font-size:.72rem;opacity:.8;font-weight:400">レベル・モードを選んで5分特訓</div></div>
     <span class="ma">›</span>
   </button>
   <button class="mbtn m-stat" onclick="goStats()">
@@ -324,18 +318,33 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 
 <!-- ═══ QUIZ MODE SELECT ═══ -->
 <div class="scr" id="s-quiz-select">
-  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">📝 クイズに挑戦！</div></div>
+  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">📝 和語クイズ</div></div>
   <div class="mode-select">
-    <div class="mode-select-title">モードを選んでね</div>
-    <button class="msbtn ms-choice" onclick="startQuizMode('choice')">
-      <span class="msi">🔤</span>
-      <div class="mst"><div>四択</div><div class="mss">意味を見て語句を選ぶ</div></div>
+    <div class="mode-select-title">① レベルを選んでね</div>
+    <div style="display:flex;gap:10px;width:100%;margin-bottom:18px">
+      <button id="qlv-A" class="msbtn ms-choice" style="flex:1;justify-content:center" onclick="selectQuizLevel('A')">
+        <span class="msi">📘</span>
+        <div class="mst"><div>Aレベル</div><div class="mss">A1〜A10</div></div>
+      </button>
+      <button id="qlv-B" class="msbtn ms-rev" style="flex:1;justify-content:center" onclick="selectQuizLevel('B')">
+        <span class="msi">📗</span>
+        <div class="mst"><div>Bレベル</div><div class="mss">B1〜B4</div></div>
+      </button>
+    </div>
+    <div class="mode-select-title">② モードを選んでね</div>
+    <button id="qm-reverse" class="msbtn ms-rev" onclick="selectQuizType('reverse')">
+      <span class="msi">🔁</span>
+      <div class="mst"><div>和語→意味</div><div class="mss">語句を見て意味を4択で選ぶ</div></div>
       <span style="font-size:1.1rem;opacity:.5">›</span>
     </button>
-    <button class="msbtn ms-rev" onclick="startQuizMode('reverse')">
-      <span class="msi">🔁</span>
-      <div class="mst"><div>意味→語句</div><div class="mss">語句を見て意味を選ぶ</div></div>
+    <button id="qm-ex" class="msbtn ms-choice" onclick="selectQuizType('ex')">
+      <span class="msi">📖</span>
+      <div class="mst"><div>例文→和語</div><div class="mss">＿＿の入った例文から語句を4択で選ぶ</div></div>
       <span style="font-size:1.1rem;opacity:.5">›</span>
+    </button>
+    <button id="quiz-start-btn" class="msbtn" style="background:linear-gradient(135deg,#aaa,#ccc);margin-top:8px;justify-content:center;pointer-events:none" onclick="startQuizMode()">
+      <span class="msi">▶️</span>
+      <div class="mst"><div>スタート！</div><div class="mss" id="quiz-start-sub">レベルとモードを選んでください</div></div>
     </button>
   </div>
 </div>
@@ -651,8 +660,7 @@ function updateHome(){
   document.getElementById('h-review').textContent=WORDS.filter(w=>S[w.w]&&!isNew(w)).length;
   document.getElementById('h-due').textContent=due.length;
   document.getElementById('h-new').textContent=nw.length;
-  document.getElementById('srs-badge').textContent=(due.length+Math.min(nw.length,10))+'語';
-  document.getElementById('hard-badge').textContent=hrd.length+'語';
+  document.getElementById('srs-badge').textContent=WORDS.length+'語';
   const total=due.length+Math.min(nw.length,10);
   document.getElementById('today-title').textContent=total>0?'今日の復習・新規':'今日のノルマ達成！';
   document.getElementById('today-sub').textContent=total>0?`期限${due.length}語 ＋ 新規${Math.min(nw.length,10)}語`:`本日 ${todayCount}語 学習しました 🎉`;
@@ -667,10 +675,8 @@ function updateHome(){
 let srsQ=[], srsIdx=0, srsFlipped_=false;
 
 function goSRS(){
-  const due=getDue();
-  const nw=shuffle(getNew()).slice(0,Math.max(0,10-due.length));
-  srsQ=shuffle([...due,...nw]);
-  if(!srsQ.length){ showToast('今日の復習は完了！また明日ね😊'); return; }
+  if(!WORDS.length){ showToast('データを読み込み中…'); return; }
+  srsQ = shuffle([...WORDS]);
   srsIdx=0; srsFlipped_=false;
   show('s-srs'); renderSRS();
 }
@@ -719,88 +725,144 @@ function srsRate(r){
 // ════════════════════════════════════════════════
 // QUIZ
 // ════════════════════════════════════════════════
-let qPool=[], qIdx=0, qType='choice', qOk=0, qNg=0, qAns=false, qMode='all';
+let qPool=[], qIdx=0, qType='reverse', qLv='A', qOk=0, qNg=0, qAns=false;
 let qTimerSec=300, qTimerInterval=null;
+let qLvSelected=false, qTypeSelected=false;
 
-function goQuiz(mode){
-  // ホームの「クイズに挑戦」→モード選択画面へ
-  if(mode==='all' || mode==='hard'){
-    qMode=mode;
-    if(mode==='hard') { startQuizMode('choice'); return; }
-    show('s-quiz-select');
-    return;
+function goQuiz(){
+  qLvSelected=false; qTypeSelected=false;
+  // ボタンをリセット
+  ['qlv-A','qlv-B'].forEach(id=>{
+    document.getElementById(id).style.opacity='1';
+    document.getElementById(id).style.outline='none';
+  });
+  ['qm-reverse','qm-ex'].forEach(id=>{
+    document.getElementById(id).style.opacity='1';
+    document.getElementById(id).style.outline='none';
+  });
+  const btn=document.getElementById('quiz-start-btn');
+  btn.style.background='linear-gradient(135deg,#aaa,#ccc)';
+  btn.style.pointerEvents='none';
+  document.getElementById('quiz-start-sub').textContent='レベルとモードを選んでください';
+  show('s-quiz-select');
+}
+
+function selectQuizLevel(lv){
+  qLv=lv; qLvSelected=true;
+  ['qlv-A','qlv-B'].forEach(id=>{
+    document.getElementById(id).style.outline='none';
+    document.getElementById(id).style.opacity='0.5';
+  });
+  document.getElementById('qlv-'+lv).style.opacity='1';
+  document.getElementById('qlv-'+lv).style.outline='3px solid white';
+  updateQuizStartBtn();
+}
+
+function selectQuizType(type){
+  qType=type; qTypeSelected=true;
+  ['qm-reverse','qm-ex'].forEach(id=>{
+    document.getElementById(id).style.outline='none';
+    document.getElementById(id).style.opacity='0.5';
+  });
+  document.getElementById('qm-'+type).style.opacity='1';
+  document.getElementById('qm-'+type).style.outline='3px solid white';
+  updateQuizStartBtn();
+}
+
+function updateQuizStartBtn(){
+  const btn=document.getElementById('quiz-start-btn');
+  if(qLvSelected && qTypeSelected){
+    btn.style.background='linear-gradient(135deg,#f5a623,#f7c05a)';
+    btn.style.pointerEvents='auto';
+    const modeLabel = qType==='reverse' ? '和語→意味' : '例文→和語';
+    document.getElementById('quiz-start-sub').textContent=`${qLv}レベル ／ ${modeLabel}`;
   }
 }
 
-function startQuizMode(type){
-  qType=type;
-  const pool=qMode==='hard'?getHard():WORDS;
-  if(pool.length<4){ showToast('語句が少なすぎます！'); return; }
-  qPool=shuffle([...pool,...pool,...pool]);
+function startQuizMode(){
+  // レベルでフィルタ
+  const pool = WORDS.filter(w => w.lv && w.lv.startsWith(qLv));
+  if(pool.length < 4){ showToast(`${qLv}レベルの語句が少なすぎます`); return; }
+  // 例文モードは例文がある語句のみ
+  const filtered = qType==='ex' ? pool.filter(w => w.ex && w.ex.trim()!=='') : pool;
+  if(filtered.length < 4){ showToast('例文のある語句が少なすぎます'); return; }
+  qPool=shuffle([...filtered,...filtered,...filtered]);
   qIdx=0; qOk=0; qNg=0; qTimerSec=300;
-  document.getElementById('q-title').textContent=qMode==='hard'?'🔥 苦手タイムアタック':'⏱ タイムアタック';
+  const modeLabel = qType==='reverse' ? '和語→意味' : '例文→和語';
+  document.getElementById('q-title').textContent=`⏱ ${qLv}レベル ${modeLabel}`;
+  const timerEl=document.getElementById('q-timer');
+  timerEl.style.background='linear-gradient(135deg,#f5a623,#f7c05a)';
   updateTimerDisplay(); updateScoreDisplay(); renderQ(); show('s-quiz');
   clearInterval(qTimerInterval);
   qTimerInterval=setInterval(()=>{
     qTimerSec--;
     updateTimerDisplay();
-    const el=document.getElementById('q-timer');
-    if(qTimerSec<=30) el.style.background='linear-gradient(135deg,#e05252,#f07070)';
-    else if(qTimerSec<=60) el.style.background='linear-gradient(135deg,#e05252,#f5a623)';
+    if(qTimerSec<=30) timerEl.style.background='linear-gradient(135deg,#e05252,#f07070)';
+    else if(qTimerSec<=60) timerEl.style.background='linear-gradient(135deg,#e05252,#f5a623)';
     if(qTimerSec<=0){ clearInterval(qTimerInterval); showResult(); }
   },1000);
 }
-function goHard(){ qMode='hard'; startQuizMode('choice'); }
-function quitQuiz(){ clearInterval(qTimerInterval); flushQueue(); if(qMode==='hard') goHome(); else show('s-quiz-select'); }
+
+function quitQuiz(){ clearInterval(qTimerInterval); flushQueue(); show('s-quiz-select'); }
 function updateTimerDisplay(){ const m=Math.floor(qTimerSec/60),s=qTimerSec%60; document.getElementById('q-timer').textContent=`${m}:${String(s).padStart(2,'0')}`; }
 function updateScoreDisplay(){ document.getElementById('q-ok').textContent=qOk; document.getElementById('q-ng').textContent=qNg; document.getElementById('q-total').textContent=qOk+qNg; }
 
 function renderQ(){
-  if(qIdx>=qPool.length){ showResult(); return; }
+  if(qIdx>=qPool.length){ qPool=shuffle(qPool); qIdx=0; }
   qAns=false;
   const w=qPool[qIdx];
   document.getElementById('fb').style.display='none';
   document.getElementById('nxtbtn').style.display='none';
-  if(qType==='choice'){
-    document.getElementById('qlbl').textContent='この意味の語句はどれ？';
-    document.getElementById('qtxt').textContent=w.m;
-    document.getElementById('qsub').textContent=w.ex?`例：${maskEx(w.ex,w.w)}`:'';
-    renderChoices(mkChoices(w,'w'),w.w);
-  } else {
+  if(qType==='reverse'){
+    // 和語→意味
     document.getElementById('qlbl').textContent='この語句の意味はどれ？';
     document.getElementById('qtxt').textContent=w.w+(w.r?`（${w.r}）`:'');
     document.getElementById('qsub').textContent='';
     renderChoices(mkChoices(w,'m'),w.m);
+  } else {
+    // 例文→和語（語句部分を＿＿に隠す）
+    document.getElementById('qlbl').textContent='＿＿に入る語句はどれ？';
+    document.getElementById('qtxt').textContent=maskWord(w.ex, w.w);
+    document.getElementById('qsub').textContent=`意味：${w.m}`;
+    renderChoices(mkChoices(w,'w'),w.w);
   }
 }
 
-function maskEx(ex, word){
-  const blanks = '＿'.repeat(Math.max(2, word.length));
-  // 完全一致
+function maskWord(ex, word){
+  const blanks = '＿＿';
   if(ex.includes(word)) return ex.replace(new RegExp(word, 'g'), blanks);
-  // 語幹マッチング：語尾を1文字ずつ削って前方一致を試みる
-  for(let cut = 1; cut <= Math.min(3, word.length - 2); cut++){
-    const stem = word.slice(0, word.length - cut);
-    const re = new RegExp(stem + '[ぁ-ん]*', 'g');
-    if(re.test(ex)){
-      return ex.replace(new RegExp(stem + '[ぁ-ん]*', 'g'), blanks);
-    }
+  for(let cut=1; cut<=Math.min(3, word.length-2); cut++){
+    const stem=word.slice(0, word.length-cut);
+    const re=new RegExp(stem+'[ぁ-ん]*','g');
+    if(re.test(ex)) return ex.replace(new RegExp(stem+'[ぁ-ん]*','g'), blanks);
   }
   return ex;
 }
-function mkChoices(w,key){ const pool=WORDS.filter(x=>x[key]!==w[key]); return shuffle([w[key],...shuffle(pool).slice(0,3).map(x=>x[key])]); }
+
+function mkChoices(w,key){
+  // 同レベルから優先的に選ぶ
+  const sameLv=WORDS.filter(x=>x[key]!==w[key]&&x.lv===w.lv);
+  const others=WORDS.filter(x=>x[key]!==w[key]&&x.lv!==w.lv);
+  const pool=shuffle([...sameLv,...others]);
+  return shuffle([w[key],...pool.slice(0,3).map(x=>x[key])]);
+}
 function renderChoices(cs,correct){ const g=document.getElementById('cgrid'); g.innerHTML=''; cs.forEach(c=>{ const b=document.createElement('button'); b.className='ch'; b.textContent=c; b.onclick=()=>chkChoice(c,correct,b); g.appendChild(b); }); }
 function chkChoice(sel,correct,btn){
   if(qAns)return; qAns=true;
-  document.querySelectorAll('.ch').forEach(b=>{ b.disabled=true; if(b.textContent===correct)b.classList.add('ok'); });
+  document.querySelectorAll('#cgrid .ch').forEach(b=>{ b.disabled=true; if(b.textContent===correct)b.classList.add('ok'); });
   const ok=sel===correct;
   if(!ok)btn.classList.add('ng');
   if(ok){ qOk++; shootStar('✨'); } else { qNg++; }
   sm2Update(qPool[qIdx], ok?2:0);
-  updateScoreDisplay(); showFB(ok,correct);
+  updateScoreDisplay();
+  const fb=document.getElementById('fb'); const w=qPool[qIdx];
+  fb.className='fb '+(ok?'ok':'ng');
+  fb.innerHTML=(ok?'⭐ 正解！すばらしい！':`😓 正解は「${correct}」だよ`);
+  if(qType==='ex') fb.innerHTML+=`<div style="margin-top:5px;font-size:.8rem;font-weight:400">${w.m}</div>`;
+  else if(w.ex) fb.innerHTML+=`<div style="margin-top:5px;font-size:.8rem;font-weight:400">例：${w.ex}</div>`;
+  fb.style.display='block';
   if(ok){ setTimeout(()=>nextQ(),500); } else { document.getElementById('nxtbtn').style.display='block'; }
 }
-function showFB(ok,ans){ const fb=document.getElementById('fb'),w=qPool[qIdx]; fb.className='fb '+(ok?'ok':'ng'); fb.innerHTML=(ok?'⭐ 正解！すばらしい！':`😓 正解は「${ans}」だよ`)+(w.ex?`<div style="margin-top:6px;font-size:.8rem;opacity:.85;font-weight:400">例：${w.ex}</div>`:''); fb.style.display='block'; }
 function nextQ(){ qIdx++; renderQ(); }
 function showResult(){
   clearInterval(qTimerInterval);
@@ -808,7 +870,7 @@ function showResult(){
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
   document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${qOk}問</strong> ／ ミス <strong style="color:var(--red)">${qNg}問</strong><br>正答率 <strong>${pct}%</strong>`;
-  document.getElementById('result-retry-btn').onclick = ()=>{ closeResult(); startQuizMode(qType); };
+  document.getElementById('result-retry-btn').onclick = ()=>{ closeResult(); show('s-quiz-select'); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
   flushQueue();
