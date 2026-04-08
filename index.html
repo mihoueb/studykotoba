@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -351,7 +352,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
     </svg>
     <div class="acc-info">
       <div class="acc-big" id="acc-big">—%</div>
-      <div class="acc-label">総合正答率</div>
+      <div class="acc-label">総合正答率（全カテゴリ）</div>
       <div class="acc-row">
         <div class="acc-sub">正解 <strong id="acc-ok">0</strong></div>
         <div class="acc-sub">不正解 <strong id="acc-ng">0</strong></div>
@@ -362,9 +363,15 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
       </div>
     </div>
   </div>
-  <div class="hist-title">📈 レベル別 正答率</div>
-  <div class="hist-bars" id="hist-bars"></div>
-  <div class="hist-title">⏰ 次回出題スケジュール（上位15語）</div>
+  <div class="hist-title">📖 和語 レベル別正答率</div>
+  <div class="hist-bars" id="hist-bars-wago"></div>
+  <div class="hist-title">📜 ことわざ レベル別正答率</div>
+  <div class="hist-bars" id="hist-bars-koto"></div>
+  <div class="hist-title">🌍 外来語 レベル別正答率</div>
+  <div class="hist-bars" id="hist-bars-gairaigo"></div>
+  <div class="hist-title">✋ 慣用句 レベル別正答率</div>
+  <div class="hist-bars" id="hist-bars-kanyouku"></div>
+  <div class="hist-title">⏰ 次回出題スケジュール（和語 上位15語）</div>
   <div class="due-list" id="due-list"></div>
 </div>
 
@@ -372,6 +379,14 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 <div class="scr" id="s-list">
   <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">📖 語句いちらん</div><div class="hpill" id="list-pill">0語</div></div>
   <input class="sinp" id="sinp" placeholder="🔍 語句・意味を検索…" oninput="renderList()">
+  <!-- カテゴリ切り替え -->
+  <div class="flrow" id="list-cat-row" style="margin-bottom:6px">
+    <button class="flbtn on" onclick="setListCat('wago',this)">📖 和語</button>
+    <button class="flbtn" onclick="setListCat('kotowaza',this)">📜 ことわざ</button>
+    <button class="flbtn" onclick="setListCat('gairaigo',this)">🌍 外来語</button>
+    <button class="flbtn" onclick="setListCat('kanyouku',this)">✋ 慣用句</button>
+  </div>
+  <!-- レベルフィルター -->
   <div class="flrow" id="flrow"></div>
   <div id="list-area"></div>
 </div>
@@ -790,22 +805,77 @@ function closeResult(){ document.getElementById('rovl').classList.remove('on'); 
 function retryResult(){}
 
 // ── STATS ──
-function goStats(){
-  const {ok,ng,pct}=accRate();
-  document.getElementById('acc-ok').textContent=ok; document.getElementById('acc-ng').textContent=ng;
-  document.getElementById('acc-streak').textContent=streak; document.getElementById('acc-today').textContent=todayCount;
-  if(pct!=null){ document.getElementById('acc-big').textContent=pct+'%'; document.getElementById('ring-txt').textContent=pct+'%'; document.getElementById('ring-fg').style.strokeDashoffset=251.2*(1-pct/100); }
-  else{ document.getElementById('acc-big').textContent='—'; document.getElementById('ring-txt').textContent='—'; }
-  const lvls=['A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','B1','B2','B3','B4'];
-  const hb=document.getElementById('hist-bars'); hb.innerHTML='';
-  lvls.forEach(lv=>{
-    const ws=WORDS.filter(w=>w.lv===lv); let tok=0,tng=0;
-    ws.forEach(w=>{ const c=S[w.w]; if(c){tok+=c.totalOk||0;tng+=c.totalNg||0;} });
-    const tot=tok+tng; if(!tot)return;
-    const p=Math.round(tok/tot*100), col=p>=80?'var(--grn)':p>=60?'var(--sun)':'var(--red)';
-    hb.innerHTML+=`<div class="hbar-row"><div class="hbar-label">${lv}</div><div class="hbar-track"><div class="hbar-fill" style="width:${p}%;background:${col}"></div></div><div class="hbar-val">${p}%</div></div>`;
+function calcBarHtml(items, getScore){
+  // items: 配列, getScore(item) → {ok, ng}
+  // レベルごとに集計してバーHTMLを返す
+  const lvMap={};
+  items.forEach(item=>{
+    const lv=item.lv||'?';
+    if(!lvMap[lv]) lvMap[lv]={ok:0,ng:0};
+    const sc=getScore(item);
+    lvMap[lv].ok+=sc.ok; lvMap[lv].ng+=sc.ng;
   });
-  if(!hb.innerHTML) hb.innerHTML='<div style="color:#aaa;font-size:.85rem;padding:8px">まだデータがありません</div>';
+  // レベルをソート
+  const sorted=Object.keys(lvMap).sort((a,b)=>{
+    const n=x=>{ const m=x.match(/([A-Z])(\d+)/); return m?m[1].charCodeAt(0)*100+parseInt(m[2]):999; };
+    return n(a)-n(b);
+  });
+  let html='';
+  sorted.forEach(lv=>{
+    const {ok,ng}=lvMap[lv]; const tot=ok+ng; if(!tot)return;
+    const p=Math.round(ok/tot*100), col=p>=80?'var(--grn)':p>=60?'var(--sun)':'var(--red)';
+    html+=`<div class="hbar-row"><div class="hbar-label" style="width:36px">${lv}</div><div class="hbar-track"><div class="hbar-fill" style="width:${p}%;background:${col}"></div></div><div class="hbar-val">${p}%</div></div>`;
+  });
+  return html || '<div style="color:#aaa;font-size:.82rem;padding:6px">まだデータがありません</div>';
+}
+
+async function goStats(){
+  // ことわざ・外来語・慣用句が未読み込みなら読み込む
+  await Promise.all([
+    KOTOWAZA.length?Promise.resolve():loadKotowaza(),
+    GAIRAIGO.length?Promise.resolve():loadGairaigo(),
+    KANYOUKU.length?Promise.resolve():loadKanyouku(),
+  ]);
+
+  // 総合正答率（全カテゴリ合算）
+  let totalOk=0, totalNg=0;
+  WORDS.forEach(w=>{ const c=S[w.w]; if(c){totalOk+=c.totalOk||0; totalNg+=c.totalNg||0;} });
+  KOTOWAZA.forEach(k=>{ const sc=SK[k.k]; if(sc){totalOk+=sc.totalOk||0; totalNg+=sc.totalNg||0;} });
+  GAIRAIGO.forEach(g=>{ const sc=SG[g.w]; if(sc){totalOk+=sc.totalOk||0; totalNg+=sc.totalNg||0;} });
+  KANYOUKU.forEach(k=>{ const sc=SKA[k.k]; if(sc){totalOk+=sc.totalOk||0; totalNg+=sc.totalNg||0;} });
+  const pct=totalOk+totalNg>0?Math.round(totalOk/(totalOk+totalNg)*100):null;
+
+  document.getElementById('acc-ok').textContent=totalOk;
+  document.getElementById('acc-ng').textContent=totalNg;
+  document.getElementById('acc-streak').textContent=streak;
+  document.getElementById('acc-today').textContent=todayCount;
+  if(pct!=null){
+    document.getElementById('acc-big').textContent=pct+'%';
+    document.getElementById('ring-txt').textContent=pct+'%';
+    document.getElementById('ring-fg').style.strokeDashoffset=251.2*(1-pct/100);
+  } else {
+    document.getElementById('acc-big').textContent='—';
+    document.getElementById('ring-txt').textContent='—';
+  }
+
+  // 和語 レベル別
+  document.getElementById('hist-bars-wago').innerHTML=calcBarHtml(
+    WORDS, w=>{ const c=S[w.w]||{totalOk:0,totalNg:0}; return {ok:c.totalOk||0, ng:c.totalNg||0}; }
+  );
+  // ことわざ レベル別
+  document.getElementById('hist-bars-koto').innerHTML=calcBarHtml(
+    KOTOWAZA, k=>{ const sc=SK[k.k]||{totalOk:0,totalNg:0}; return {ok:sc.totalOk||0, ng:sc.totalNg||0}; }
+  );
+  // 外来語 レベル別
+  document.getElementById('hist-bars-gairaigo').innerHTML=calcBarHtml(
+    GAIRAIGO, g=>{ const sc=SG[g.w]||{totalOk:0,totalNg:0}; return {ok:sc.totalOk||0, ng:sc.totalNg||0}; }
+  );
+  // 慣用句 レベル別
+  document.getElementById('hist-bars-kanyouku').innerHTML=calcBarHtml(
+    KANYOUKU, k=>{ const sc=SKA[k.k]||{totalOk:0,totalNg:0}; return {ok:sc.totalOk||0, ng:sc.totalNg||0}; }
+  );
+
+  // 次回出題スケジュール（和語）
   const dl=document.getElementById('due-list'); dl.innerHTML='';
   [...WORDS].sort((a,b)=>{ const ca=getCard(a),cb=getCard(b); if(!ca.nextDue&&!cb.nextDue)return 0; if(!ca.nextDue)return -1; if(!cb.nextDue)return 1; return new Date(ca.nextDue)-new Date(cb.nextDue); }).slice(0,15).forEach(w=>{
     const c=getCard(w); let wc,wt;
@@ -814,38 +884,105 @@ function goStats(){
     else{ const diff=Math.round((new Date(c.nextDue)-new Date(TODAY))/(86400000)); wc=diff<=3?'due-soon':'due-later'; wt=diff<=3?`⚡ ${diff}日後`:`✓ ${diff}日後`; }
     dl.innerHTML+=`<div class="due-item"><div class="due-word">${w.w}<span style="font-size:.7rem;color:#aaa;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:400"> ${w.m.slice(0,15)}…</span></div><div class="due-when ${wc}">${wt}</div></div>`;
   });
+
   show('s-stats');
 }
 
 // ── LIST ──
-let listLv='all';
-function goList(){ renderList(); show('s-list'); }
+let listLv='all', listCat='wago';
+
+function setListCat(cat, el){
+  listCat=cat; listLv='all';
+  document.querySelectorAll('#list-cat-row .flbtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  // カテゴリに応じてデータ読み込み＆フィルター更新
+  const loadPromise =
+    cat==='kotowaza' ? (KOTOWAZA.length?Promise.resolve():loadKotowaza()) :
+    cat==='gairaigo' ? (GAIRAIGO.length?Promise.resolve():loadGairaigo()) :
+    cat==='kanyouku' ? (KANYOUKU.length?Promise.resolve():loadKanyouku()) :
+    Promise.resolve();
+  loadPromise.then(()=>{ setupListFilters(); renderList(); });
+}
+
+function goList(){
+  setupListFilters();
+  renderList();
+  show('s-list');
+}
+
 function renderList(){
   const q=document.getElementById('sinp').value.trim();
-  const filtered=WORDS.filter(w=>(!q||w.w.includes(q)||w.m.includes(q))&&(listLv==='all'||w.lv===listLv));
-  document.getElementById('list-pill').textContent=filtered.length+'語';
   const el=document.getElementById('list-area'); el.innerHTML='';
-  filtered.forEach(w=>{
-    const c=getCard(w); const tot=c.totalOk+c.totalNg; const pct=tot>0?Math.round(c.totalOk/tot*100):null;
-    const mastery=c.interval>=21?100:c.interval>=7?70:c.interval>=3?40:c.interval>=1?20:0;
-    const icon=mastery>=70?'⭐':tot>0&&(pct||0)<50?'🔥':'📖';
-    const barColor=mastery>=70?'var(--grn)':mastery>=40?'var(--sun)':'var(--red)';
-    let dueStr='';
-    if(isNew(w)) dueStr='🆕';
-    else if(isDue(w)) dueStr='🔴今日';
-    else{ const diff=Math.round((new Date(getCard(w).nextDue)-new Date(TODAY))/(86400000)); dueStr=`📅${diff}日後`; }
-    const d=document.createElement('div'); d.className='wcard';
-    d.innerHTML=`<div class="wi">${icon}</div><div style="flex:1;min-width:0"><div class="ww">${w.w}</div><div class="wr">${w.r||''}</div><div class="wm">${w.m}</div><div class="wtags"><span class="tag tc">${w.cat}</span><span class="tag tl">Lv.${w.lv}</span>${pct!=null?`<span class="tag ts">正答${pct}%</span>`:''}<span class="tag" style="background:#f0f0f0;color:#888">${dueStr}</span></div><div class="srs-bar-wrap"><div class="srs-bar" style="width:${mastery}%;background:${barColor}"></div></div></div>`;
-    el.appendChild(d);
-  });
+
+  if(listCat==='wago'){
+    const filtered=WORDS.filter(w=>(!q||w.w.includes(q)||w.m.includes(q))&&(listLv==='all'||w.lv===listLv));
+    document.getElementById('list-pill').textContent=filtered.length+'語';
+    filtered.forEach(w=>{
+      const c=getCard(w); const tot=c.totalOk+c.totalNg; const pct=tot>0?Math.round(c.totalOk/tot*100):null;
+      const mastery=c.interval>=21?100:c.interval>=7?70:c.interval>=3?40:c.interval>=1?20:0;
+      const icon=mastery>=70?'⭐':tot>0&&(pct||0)<50?'🔥':'📖';
+      const barColor=mastery>=70?'var(--grn)':mastery>=40?'var(--sun)':'var(--red)';
+      let dueStr='';
+      if(isNew(w)) dueStr='🆕';
+      else if(isDue(w)) dueStr='🔴今日';
+      else{ const diff=Math.round((new Date(getCard(w).nextDue)-new Date(TODAY))/(86400000)); dueStr=`📅${diff}日後`; }
+      const d=document.createElement('div'); d.className='wcard';
+      d.innerHTML=`<div class="wi">${icon}</div><div style="flex:1;min-width:0"><div class="ww">${w.w}</div><div class="wr">${w.r||''}</div><div class="wm">${w.m}</div>${w.ex?`<div style="font-size:.72rem;color:#999;margin-top:2px">例：${w.ex}</div>`:''}<div class="wtags"><span class="tag tl">Lv.${w.lv}</span>${pct!=null?`<span class="tag ts">正答${pct}%</span>`:''}<span class="tag" style="background:#f0f0f0;color:#888">${dueStr}</span></div><div class="srs-bar-wrap"><div class="srs-bar" style="width:${mastery}%;background:${barColor}"></div></div></div>`;
+      el.appendChild(d);
+    });
+
+  } else if(listCat==='kotowaza'){
+    const filtered=KOTOWAZA.filter(k=>(!q||k.k.includes(q)||k.m.includes(q)||(k.a&&k.a.includes(q)))&&(listLv==='all'||k.lv===listLv));
+    document.getElementById('list-pill').textContent=filtered.length+'問';
+    filtered.forEach(k=>{
+      const sc=SK[k.k]||{totalOk:0,totalNg:0}; const tot=sc.totalOk+sc.totalNg; const pct=tot>0?Math.round(sc.totalOk/tot*100):null;
+      const icon=pct!=null&&pct>=80?'⭐':tot>0&&(pct||0)<50?'🔥':'📜';
+      const d=document.createElement('div'); d.className='wcard';
+      d.innerHTML=`<div class="wi">${icon}</div><div style="flex:1;min-width:0"><div class="ww">${k.k.replace('□',`<span style="color:var(--teal);font-weight:800">${k.a||'□'}</span>`)}</div><div class="wr">${k.r||''}</div><div class="wm">${k.m}</div><div class="wtags"><span class="tag tl">Lv.${k.lv}</span>${pct!=null?`<span class="tag ts">正答${pct}%</span>`:''}</div></div>`;
+      el.appendChild(d);
+    });
+
+  } else if(listCat==='gairaigo'){
+    const filtered=GAIRAIGO.filter(g=>(!q||g.w.includes(q)||g.m.includes(q))&&(listLv==='all'||g.lv===listLv));
+    document.getElementById('list-pill').textContent=filtered.length+'語';
+    filtered.forEach(g=>{
+      const sc=SG[g.w]||{totalOk:0,totalNg:0}; const tot=sc.totalOk+sc.totalNg; const pct=tot>0?Math.round(sc.totalOk/tot*100):null;
+      const icon=pct!=null&&pct>=80?'⭐':tot>0&&(pct||0)<50?'🔥':'🌍';
+      const d=document.createElement('div'); d.className='wcard';
+      d.innerHTML=`<div class="wi">${icon}</div><div style="flex:1;min-width:0"><div class="ww">${g.w}</div><div class="wr">${g.r||''}</div><div class="wm">${g.m}</div>${g.ex?`<div style="font-size:.72rem;color:#999;margin-top:2px">例：${g.ex}</div>`:''}<div class="wtags"><span class="tag tl">Lv.${g.lv}</span>${pct!=null?`<span class="tag ts">正答${pct}%</span>`:''}</div></div>`;
+      el.appendChild(d);
+    });
+
+  } else { // kanyouku
+    const filtered=KANYOUKU.filter(k=>(!q||k.k.includes(q)||k.m.includes(q)||(k.a&&k.a.includes(q)))&&(listLv==='all'||k.lv===listLv));
+    document.getElementById('list-pill').textContent=filtered.length+'問';
+    filtered.forEach(k=>{
+      const sc=SKA[k.k]||{totalOk:0,totalNg:0}; const tot=sc.totalOk+sc.totalNg; const pct=tot>0?Math.round(sc.totalOk/tot*100):null;
+      const icon=pct!=null&&pct>=80?'⭐':tot>0&&(pct||0)<50?'🔥':'✋';
+      const d=document.createElement('div'); d.className='wcard';
+      d.innerHTML=`<div class="wi">${icon}</div><div style="flex:1;min-width:0"><div class="ww">${k.k.replace('□',`<span style="color:var(--pur);font-weight:800">${k.a||'□'}</span>`)}</div><div class="wr">${k.r||''}</div><div class="wm">${k.m}</div>${k.h?`<div style="font-size:.68rem;color:var(--pur);background:var(--pur-l);border-radius:6px;padding:2px 6px;margin-top:3px;display:inline-block">${k.h}</div>`:''}<div class="wtags"><span class="tag tl">Lv.${k.lv}</span>${pct!=null?`<span class="tag ts">正答${pct}%</span>`:''}</div></div>`;
+      el.appendChild(d);
+    });
+  }
+
+  if(el.innerHTML===''){
+    el.innerHTML='<div style="color:#aaa;font-size:.9rem;text-align:center;padding:24px">該当する語句がありません</div>';
+  }
 }
+
 function setupListFilters(){
-  const lvs=['all','A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','B1','B2','B3','B4'];
+  const lvMap={
+    wago:     ['all','A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','B1','B2','B3','B4'],
+    kotowaza: ['all','A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','B1','B2','B3','B4','B5','B6'],
+    gairaigo: ['all','A1','A2','A3','A4','B1','B2'],
+    kanyouku: ['all','A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','B1','B2','B3','B4'],
+  };
+  const lvs=lvMap[listCat]||['all'];
   const r=document.getElementById('flrow'); r.innerHTML='';
   lvs.forEach(lv=>{
-    const b=document.createElement('button'); b.className='flbtn'+(lv==='all'?' on':'');
+    const b=document.createElement('button'); b.className='flbtn'+(lv===listLv?' on':'');
     b.textContent=lv==='all'?'すべて':lv;
-    b.onclick=()=>{ listLv=lv; document.querySelectorAll('.flbtn').forEach(x=>x.classList.remove('on')); b.classList.add('on'); renderList(); };
+    b.onclick=()=>{ listLv=lv; document.querySelectorAll('#flrow .flbtn').forEach(x=>x.classList.remove('on')); b.classList.add('on'); renderList(); };
     r.appendChild(b);
   });
 }
