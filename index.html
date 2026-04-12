@@ -57,6 +57,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 .m-kotowaza{background:linear-gradient(135deg,#8b5a2b,#c49a6c);}
 .m-gairaigo{background:linear-gradient(135deg,#1a6e3c,#2ecc71);}
 .m-kanyouku{background:linear-gradient(135deg,#6a1a6e,#c05adb);}
+.m-yojijukugo{background:linear-gradient(135deg,#c0392b,#e74c3c);}
 .mode-select{width:100%;max-width:400px;margin-top:12px;}
 .mode-select-title{font-family:'Kaisei Decol',serif;font-size:1.1rem;font-weight:700;text-align:center;margin-bottom:16px;color:var(--deep);}
 .msbtn{width:100%;padding:20px 22px;border:none;border-radius:18px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;gap:14px;box-shadow:var(--sh2);transition:transform .15s;text-align:left;color:white;}
@@ -250,6 +251,12 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
     <span class="mi">✋</span>
     <div class="mt"><div>慣用句練習</div><div style="font-size:.72rem;opacity:.8;font-weight:400">穴埋め・意味あてで覚える</div></div>
     <span class="badge" id="kanyouku-badge">0問</span>
+    <span class="ma">›</span>
+  </button>
+  <button class="mbtn m-yojijukugo" onclick="goYoji()">
+    <span class="mi">🈶</span>
+    <div class="mt"><div>四字熟語クイズ</div><div style="font-size:.72rem;opacity:.8;font-weight:400">読み・意味から四字熟語を特訓</div></div>
+    <span class="badge" id="yoji-badge">0問</span>
     <span class="ma">›</span>
   </button>
 </div>
@@ -531,6 +538,57 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
   <div class="cgrid" id="kanyouku-cgrid"></div>
   <div class="fb" id="kanyouku-fb"></div>
   <button class="nxtbtn" id="kanyouku-nxtbtn" onclick="nextKanyouku()">つぎの問題 →</button>
+</div>
+
+<!-- ═══ YOJI MODE SELECT ═══ -->
+<div class="scr" id="s-yoji-select">
+  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">🈶 四字熟語クイズ</div></div>
+  <div class="mode-select">
+    <div class="mode-select-title">モードを選んでね</div>
+    <button class="msbtn" style="background:linear-gradient(135deg,#c0392b,#e74c3c)" onclick="startYojiMode('reading')">
+      <span class="msi">📖</span>
+      <div class="mst"><div>読み＋意味 → 四字熟語</div><div class="mss">読みと意味を見て四字熟語を6択で選ぶ</div></div>
+      <span style="font-size:1.1rem;opacity:.5">›</span>
+    </button>
+    <button class="msbtn" style="background:linear-gradient(135deg,#8e44ad,#9b59b6)" onclick="startYojiMode('meaning6')">
+      <span class="msi">💡</span>
+      <div class="mst"><div>意味 → 四字熟語（6択）</div><div class="mss">意味のみを見て四字熟語を6択で選ぶ</div></div>
+      <span style="font-size:1.1rem;opacity:.5">›</span>
+    </button>
+    <button class="msbtn" style="background:linear-gradient(135deg,#2471a3,#2e86c1)" onclick="startYojiMode('idiom4')">
+      <span class="msi">🔁</span>
+      <div class="mst"><div>四字熟語 → 意味（4択）</div><div class="mss">四字熟語を見て意味を4択で選ぶ</div></div>
+      <span style="font-size:1.1rem;opacity:.5">›</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ YOJI ═══ -->
+<div class="scr" id="s-yoji">
+  <div class="hdr"><button class="bk" onclick="quitYoji()">←</button><div class="htitle">🈶 四字熟語クイズ</div><div class="hpill" id="yoji-timer" style="background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;font-size:1rem;padding:6px 16px">5:00</div></div>
+  <div class="pbar"><div class="pfill" id="yoji-prog"></div></div>
+  <div style="display:flex;gap:8px;width:100%;max-width:460px;margin-bottom:10px">
+    <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
+      <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--grn)" id="yoji-ok">0</div>
+      <div style="font-size:.62rem;font-weight:800;color:#aaa">⭐ 正解</div>
+    </div>
+    <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
+      <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--red)" id="yoji-ng">0</div>
+      <div style="font-size:.62rem;font-weight:800;color:#aaa">😓 ミス</div>
+    </div>
+    <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
+      <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--pur)" id="yoji-total">0</div>
+      <div style="font-size:.62rem;font-weight:800;color:#aaa">📝 合計</div>
+    </div>
+  </div>
+  <div class="qbox">
+    <div class="qlbl" id="yoji-qlbl">問題</div>
+    <div class="qtxt" id="yoji-qtxt" style="font-size:1.3rem;line-height:1.6">—</div>
+    <div class="qsub" id="yoji-qsub" style="margin-top:6px;font-size:.82rem;color:#888;line-height:1.7"></div>
+  </div>
+  <div class="cgrid6" id="yoji-cgrid"></div>
+  <div class="fb" id="yoji-fb"></div>
+  <button class="nxtbtn" id="yoji-nxtbtn" onclick="nextYoji()">つぎの問題 →</button>
 </div>
 
 <!-- RESULT -->
@@ -1309,6 +1367,148 @@ function showKanyoukuResult(){
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
   document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${kaOk}問</strong> ／ ミス <strong style="color:var(--red)">${kaNg}問</strong><br>正答率 <strong>${pct}%</strong>`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); startKanyouku(); show('s-kanyouku'); };
+  document.getElementById('rovl').classList.add('on');
+  if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
+  flushQueue();
+}
+
+// ── YOJIJUKUGO ──
+let YOJI=[], SY={};
+let yojiPool=[], yojiIdx=0, yojiOk=0, yojiNg=0, yojiAns=false, yojiMode='reading';
+let yojiTimerSec=300, yojiTimerInterval=null;
+
+async function loadYoji(){
+  if(YOJI.length) return;
+  document.getElementById('loading-overlay').classList.remove('hidden');
+  document.querySelector('.loading-text').textContent='四字熟語データを読み込み中…';
+  try {
+    const res=await fetch(`${SHEET_URL}?type=yoji`); const data=await res.json();
+    YOJI=data.map(row=>({
+      id:   row.No || row.no || '',
+      i:    row.idiom   || '',   // 四字熟語
+      r:    row.reading || '',   // 読み
+      m:    row.meaning || '',   // 意味
+      lv:   row.level   || '',
+      rowIndex: row.rowIndex,
+      _ok:  parseInt(row.correctCount)||0,
+      _total: parseInt(row.totalCount)||0,
+    })).filter(x=>x.i);
+    SY=JSON.parse(localStorage.getItem('yoji_v1')||'{}');
+    YOJI.forEach(y=>{ if(!SY[y.i]) SY[y.i]={totalOk:0,totalNg:0}; SY[y.i].totalOk=y._ok; SY[y.i].totalNg=y._total-y._ok; });
+    document.getElementById('yoji-badge').textContent=YOJI.length+'問';
+  } catch(e){ showToast('⚠️ 四字熟語の読み込みに失敗しました'); console.error(e); }
+  document.getElementById('loading-overlay').classList.add('hidden');
+  document.querySelector('.loading-text').textContent='語句データを読み込み中…';
+}
+
+async function goYoji(){ await loadYoji(); if(!YOJI.length) return; show('s-yoji-select'); }
+
+function startYojiMode(mode){
+  yojiMode=mode;
+  const minPool = mode==='idiom4' ? 4 : 6;
+  if(YOJI.length < minPool){ showToast('データが少なすぎます'); return; }
+  yojiPool=shuffle([...YOJI,...YOJI,...YOJI]);
+  yojiIdx=0; yojiOk=0; yojiNg=0; yojiTimerSec=300;
+  updateYojiScore(); updateYojiTimerDisplay();
+  const el=document.getElementById('yoji-timer');
+  const colors={reading:'linear-gradient(135deg,#c0392b,#e74c3c)', meaning6:'linear-gradient(135deg,#8e44ad,#9b59b6)', idiom4:'linear-gradient(135deg,#2471a3,#2e86c1)'};
+  el.style.background=colors[mode]||colors.reading;
+  clearInterval(yojiTimerInterval);
+  yojiTimerInterval=setInterval(()=>{
+    yojiTimerSec--; updateYojiTimerDisplay();
+    const el=document.getElementById('yoji-timer');
+    if(yojiTimerSec<=30) el.style.background='linear-gradient(135deg,#e05252,#f07070)';
+    else if(yojiTimerSec<=60) el.style.background='linear-gradient(135deg,#e05252,#f5a623)';
+    if(yojiTimerSec<=0){ clearInterval(yojiTimerInterval); showYojiResult(); }
+  },1000);
+  show('s-yoji'); renderYoji();
+}
+
+function quitYoji(){ clearInterval(yojiTimerInterval); flushQueue(); show('s-yoji-select'); }
+function updateYojiTimerDisplay(){ const m=Math.floor(yojiTimerSec/60),s=yojiTimerSec%60; document.getElementById('yoji-timer').textContent=`${m}:${String(s).padStart(2,'0')}`; }
+function updateYojiScore(){ document.getElementById('yoji-ok').textContent=yojiOk; document.getElementById('yoji-ng').textContent=yojiNg; document.getElementById('yoji-total').textContent=yojiOk+yojiNg; }
+
+function renderYoji(){
+  if(yojiIdx>=yojiPool.length){ yojiPool=shuffle(yojiPool); yojiIdx=0; }
+  yojiAns=false; const y=yojiPool[yojiIdx];
+  document.getElementById('yoji-fb').style.display='none';
+  document.getElementById('yoji-nxtbtn').style.display='none';
+  document.getElementById('yoji-prog').style.width=`${(yojiIdx/yojiPool.length)*100}%`;
+
+  if(yojiMode==='reading'){
+    // 読み＋意味 → 四字熟語（6択）
+    document.getElementById('yoji-qlbl').textContent='この読みと意味の四字熟語はどれ？';
+    document.getElementById('yoji-qtxt').textContent=y.r;
+    document.getElementById('yoji-qsub').textContent=y.m;
+    renderYojiChoices(makeYojiChoices(y,'i',6), y.i);
+
+  } else if(yojiMode==='meaning6'){
+    // 意味のみ → 四字熟語（6択）
+    document.getElementById('yoji-qlbl').textContent='この意味の四字熟語はどれ？';
+    document.getElementById('yoji-qtxt').textContent=y.m;
+    document.getElementById('yoji-qsub').textContent='';
+    renderYojiChoices(makeYojiChoices(y,'i',6), y.i);
+
+  } else {
+    // 四字熟語 → 意味（4択）
+    document.getElementById('yoji-qlbl').textContent='この四字熟語の意味はどれ？';
+    document.getElementById('yoji-qtxt').textContent=y.i;
+    document.getElementById('yoji-qsub').textContent=`（${y.r}）`;
+    renderYojiChoices(makeYojiChoices(y,'m',4), y.m);
+  }
+}
+
+function makeYojiChoices(y, key, n){
+  // 同レベル優先でn択を作る
+  const sameLv=YOJI.filter(x=>x[key]!==y[key]&&x.lv===y.lv);
+  const others=YOJI.filter(x=>x[key]!==y[key]&&x.lv!==y.lv);
+  const pool=shuffle([...sameLv,...others]);
+  return shuffle([y[key],...pool.slice(0,n-1).map(x=>x[key])]);
+}
+
+function renderYojiChoices(choices, correct){
+  const g=document.getElementById('yoji-cgrid'); g.innerHTML='';
+  const is6=(choices.length>=6);
+  choices.forEach(c=>{
+    const b=document.createElement('button'); b.className='ch';
+    // 意味は文字が長いので小さめ、四字熟語は大きめ
+    b.style.fontSize=yojiMode==='idiom4'?'.78rem':(is6?'.82rem':'.88rem');
+    b.textContent=c;
+    b.onclick=()=>chkYoji(c,correct,b);
+    g.appendChild(b);
+  });
+}
+
+function chkYoji(sel, correct, btn){
+  if(yojiAns) return; yojiAns=true;
+  document.querySelectorAll('#yoji-cgrid .ch').forEach(b=>{ b.disabled=true; if(b.textContent===correct)b.classList.add('ok'); });
+  const ok=sel===correct; if(!ok) btn.classList.add('ng');
+  const y=yojiPool[yojiIdx];
+  if(!SY[y.i]) SY[y.i]={totalOk:0,totalNg:0};
+  if(ok){ yojiOk++; SY[y.i].totalOk++; shootStar('✨'); } else { yojiNg++; SY[y.i].totalNg++; }
+  localStorage.setItem('yoji_v1',JSON.stringify(SY)); updateYojiScore();
+  updateQueue.push({type:'yoji',rowIndex:y.rowIndex,correctCount:SY[y.i].totalOk,totalCount:SY[y.i].totalOk+SY[y.i].totalNg});
+  const fb=document.getElementById('yoji-fb'); fb.className='fb '+(ok?'ok':'ng');
+  fb.innerHTML=ok?`⭐ 正解！`:`😓 正解は「${correct}」だよ`;
+  // フィードバックに補足
+  if(yojiMode==='reading'||yojiMode==='meaning6'){
+    fb.innerHTML+=`<div style="margin-top:5px;font-size:.82rem;font-weight:400">${y.i}（${y.r}）　${y.m}</div>`;
+  } else {
+    fb.innerHTML+=`<div style="margin-top:5px;font-size:.82rem;font-weight:400">${y.m}</div>`;
+  }
+  fb.style.display='block';
+  if(ok){ setTimeout(()=>nextYoji(),500); } else { document.getElementById('yoji-nxtbtn').style.display='block'; }
+}
+
+function nextYoji(){ yojiIdx++; renderYoji(); }
+
+function showYojiResult(){
+  clearInterval(yojiTimerInterval);
+  const total=yojiOk+yojiNg, pct=total>0?Math.round(yojiOk/total*100):0;
+  document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
+  document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
+  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${yojiOk}問</strong> ／ ミス <strong style="color:var(--red)">${yojiNg}問</strong><br>正答率 <strong>${pct}%</strong>`;
+  document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); startYojiMode(yojiMode); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
   flushQueue();
