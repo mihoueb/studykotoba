@@ -541,13 +541,17 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 </div>
 
 <!-- ═══ YOJI MODE SELECT ═══ -->
+<!-- ═══ YOJI MODE SELECT ═══ -->
 <div class="scr" id="s-yoji-select">
   <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">🈶 四字熟語クイズ</div></div>
   <div class="mode-select">
     <div class="mode-select-title">モードを選んでね</div>
-    <button class="msbtn" style="background:linear-gradient(135deg,#c0392b,#e74c3c)" onclick="startYojiMode('reading')">
-      <span class="msi">📖</span>
-      <div class="mst"><div>読み＋意味 → 四字熟語</div><div class="mss">読みと意味を見て四字熟語を6択で選ぶ</div></div>
+    <button class="msbtn" style="background:linear-gradient(135deg,#c0392b,#e74c3c)" onclick="startYojiMode('writing')">
+      <span class="msi">✏️</span>
+      <div class="mst">
+        <div>書き取り練習</div>
+        <div class="mss">鉛筆と紙を用意！読み・意味を見て書いてみよう</div>
+      </div>
       <span style="font-size:1.1rem;opacity:.5">›</span>
     </button>
     <button class="msbtn" style="background:linear-gradient(135deg,#8e44ad,#9b59b6)" onclick="startYojiMode('meaning6')">
