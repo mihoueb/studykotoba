@@ -1435,26 +1435,37 @@ function renderYoji(){
   document.getElementById('yoji-nxtbtn').style.display='none';
   document.getElementById('yoji-prog').style.width=`${(yojiIdx/yojiPool.length)*100}%`;
 
-  if(yojiMode==='reading'){
-    // 読み＋意味 → 四字熟語（6択）
-    document.getElementById('yoji-qlbl').textContent='この読みと意味の四字熟語はどれ？';
-    document.getElementById('yoji-qtxt').textContent=y.r;
-    document.getElementById('yoji-qsub').textContent=y.m;
-    renderYojiChoices(makeYojiChoices(y,'i',6), y.i);
+  // エリアの表示/非表示を切り替え
+  const writingArea = document.getElementById('yoji-writing-area');
+  const answerArea = document.getElementById('yoji-answer-area');
+  const quizArea = document.getElementById('yoji-quiz-area');
 
-  } else if(yojiMode==='meaning6'){
-    // 意味のみ → 四字熟語（6択）
-    document.getElementById('yoji-qlbl').textContent='この意味の四字熟語はどれ？';
-    document.getElementById('yoji-qtxt').textContent=y.m;
-    document.getElementById('yoji-qsub').textContent='';
-    renderYojiChoices(makeYojiChoices(y,'i',6), y.i);
+  if(yojiMode==='writing'){
+    // 書き取りモード
+    writingArea.style.display='block';
+    answerArea.style.display='none';
+    quizArea.style.display='none';
+    
+    document.getElementById('yoji-write-reading').textContent=y.r;
+    document.getElementById('yoji-write-meaning').textContent=y.m;
 
   } else {
-    // 四字熟語 → 意味（4択）
-    document.getElementById('yoji-qlbl').textContent='この四字熟語の意味はどれ？';
-    document.getElementById('yoji-qtxt').textContent=y.i;
-    document.getElementById('yoji-qsub').textContent=`（${y.r}）`;
-    renderYojiChoices(makeYojiChoices(y,'m',4), y.m);
+    // 択一クイズモード
+    writingArea.style.display='none';
+    answerArea.style.display='none';
+    quizArea.style.display='block';
+
+    if(yojiMode==='meaning6'){
+      document.getElementById('yoji-qlbl').textContent='この意味の四字熟語はどれ？';
+      document.getElementById('yoji-qtxt').textContent=y.m;
+      document.getElementById('yoji-qsub').textContent='';
+      renderYojiChoices(makeYojiChoices(y,'i',6), y.i);
+    } else {
+      document.getElementById('yoji-qlbl').textContent='この四字熟語の意味はどれ？';
+      document.getElementById('yoji-qtxt').textContent=y.i;
+      document.getElementById('yoji-qsub').textContent=`（${y.r}）`;
+      renderYojiChoices(makeYojiChoices(y,'m',4), y.m);
+    }
   }
 }
 
@@ -1520,6 +1531,39 @@ function shootStar(e){ const s=document.createElement('div'); s.className='shoot
 (()=>{ const c=document.getElementById('stars'); ['✦','✧','⭐','🌟','✨'].forEach(e=>{ for(let i=0;i<3;i++){ const s=document.createElement('div'); s.className='star'; s.textContent=e; s.style.left=Math.random()*100+'%'; s.style.top=Math.random()*100+'%'; s.style.fontSize=(12+Math.random()*10)+'px'; s.style.animationDelay=Math.random()*10+'s'; s.style.animationDuration=(8+Math.random()*8)+'s'; c.appendChild(s); } }); })();
 
 init();
+  // 書き取り：答えを表示
+function revealYojiAnswer(){
+  const y=yojiPool[yojiIdx];
+  document.getElementById('yoji-writing-area').style.display='none';
+  document.getElementById('yoji-answer-area').style.display='block';
+  
+  document.getElementById('yoji-answer-idiom').textContent=y.i;
+  document.getElementById('yoji-answer-reading').textContent=y.r;
+  document.getElementById('yoji-answer-meaning').textContent=y.m;
+}
+
+// 書き取り：自己採点
+function judgeYoji(correct){
+  const y=yojiPool[yojiIdx];
+  if(!SY[y.i]) SY[y.i]={totalOk:0,totalNg:0};
+  
+  if(correct){ 
+    yojiOk++; 
+    SY[y.i].totalOk++; 
+    shootStar('⭐'); 
+    showToast('⭐ できた！');
+  } else { 
+    yojiNg++; 
+    SY[y.i].totalNg++; 
+    showToast('😓 次はがんばろう！');
+  }
+  
+  localStorage.setItem('yoji_v1',JSON.stringify(SY)); 
+  updateYojiScore();
+  updateQueue.push({type:'yoji',rowIndex:y.rowIndex,correctCount:SY[y.i].totalOk,totalCount:SY[y.i].totalOk+SY[y.i].totalNg});
+  
+  setTimeout(()=>{ yojiIdx++; renderYoji(); }, 800);
+}
 </script>
 </body>
 </html>
