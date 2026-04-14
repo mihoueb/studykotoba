@@ -570,7 +570,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
   <div style="display:flex;gap:8px;width:100%;max-width:460px;margin-bottom:10px">
     <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
       <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--grn)" id="yoji-ok">0</div>
-      <div style="font-size:.62rem;font-weight:800;color:#aaa">⭐ 正解</div>
+      <div style="font-size:.62rem;font-weight:800;color:#aaa">⭐ できた</div>
     </div>
     <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
       <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--red)" id="yoji-ng">0</div>
@@ -581,14 +581,48 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
       <div style="font-size:.62rem;font-weight:800;color:#aaa">📝 合計</div>
     </div>
   </div>
-  <div class="qbox">
-    <div class="qlbl" id="yoji-qlbl">問題</div>
-    <div class="qtxt" id="yoji-qtxt" style="font-size:1.3rem;line-height:1.6">—</div>
-    <div class="qsub" id="yoji-qsub" style="margin-top:6px;font-size:.82rem;color:#888;line-height:1.7"></div>
+  
+  <!-- 書き取り：問題表示エリア -->
+  <div id="yoji-writing-area" style="display:none;width:100%;max-width:460px">
+    <div class="qbox" style="text-align:center">
+      <div class="qlbl">この四字熟語を漢字で書いてタップ！</div>
+      <div style="font-family:'Kaisei Decol',serif;font-size:1.6rem;font-weight:700;margin:8px 0 4px" id="yoji-write-reading"></div>
+      <div style="font-size:.85rem;color:#888;line-height:1.7" id="yoji-write-meaning"></div>
+    </div>
+    <button onclick="revealYojiAnswer()" style="width:100%;padding:18px;border:none;border-radius:16px;background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;font-family:'M PLUS Rounded 1c',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;box-shadow:var(--sh2);margin-bottom:12px">
+      ✏️ 書けた！答えを見る
+    </button>
   </div>
-  <div class="cgrid6" id="yoji-cgrid"></div>
-  <div class="fb" id="yoji-fb"></div>
-  <button class="nxtbtn" id="yoji-nxtbtn" onclick="nextYoji()">つぎの問題 →</button>
+  
+  <!-- 書き取り：答え表示エリア -->
+  <div id="yoji-answer-area" style="display:none;width:100%;max-width:460px">
+    <div style="background:white;border-radius:24px;padding:24px 20px;box-shadow:var(--sh2);margin-bottom:14px;text-align:center">
+      <div style="font-size:.68rem;font-weight:800;color:#bbb;letter-spacing:.1em;margin-bottom:10px">正解</div>
+      <div style="font-family:'Kaisei Decol',serif;font-size:3rem;font-weight:700;color:var(--deep);margin-bottom:8px" id="yoji-answer-idiom"></div>
+      <div style="font-size:.85rem;color:#888;margin-bottom:4px" id="yoji-answer-reading"></div>
+      <div style="font-size:.82rem;color:#555;line-height:1.7;border-left:3px solid var(--teal);padding-left:10px;text-align:left;margin-top:8px" id="yoji-answer-meaning"></div>
+    </div>
+    <div style="display:flex;gap:10px;width:100%">
+      <button onclick="judgeYoji(true)" style="flex:1;padding:18px;border:none;border-radius:16px;background:linear-gradient(135deg,#3ab06a,#52c87a);color:white;font-family:'M PLUS Rounded 1c',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;box-shadow:var(--sh2)">
+        ⭐ できた！
+      </button>
+      <button onclick="judgeYoji(false)" style="flex:1;padding:18px;border:none;border-radius:16px;background:linear-gradient(135deg,#e05252,#f07070);color:white;font-family:'M PLUS Rounded 1c',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;box-shadow:var(--sh2)">
+        😓 できなかった
+      </button>
+    </div>
+  </div>
+  
+  <!-- 択一クイズエリア -->
+  <div id="yoji-quiz-area" style="display:none;width:100%;max-width:460px">
+    <div class="qbox">
+      <div class="qlbl" id="yoji-qlbl">問題</div>
+      <div class="qtxt" id="yoji-qtxt" style="font-size:1.3rem;line-height:1.6">—</div>
+      <div class="qsub" id="yoji-qsub" style="margin-top:6px;font-size:.82rem;color:#888;line-height:1.7"></div>
+    </div>
+    <div class="cgrid6" id="yoji-cgrid"></div>
+    <div class="fb" id="yoji-fb"></div>
+    <button class="nxtbtn" id="yoji-nxtbtn" onclick="nextYoji()">つぎの問題 →</button>
+  </div>
 </div>
 
 <!-- RESULT -->
