@@ -486,9 +486,22 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
   <button class="nxtbtn" id="gairaigo-nxtbtn" onclick="nextGairaigo()">つぎの問題 →</button>
 </div>
 
+<!-- ═══ KANYOUKU LEVEL SELECT ═══ -->
+<div class="scr" id="s-kanyouku-level">
+  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">✋ 慣用句練習</div></div>
+  <div class="mode-select">
+    <div class="mode-select-title" style="margin-bottom:12px">やりたいレベルを教えて</div>
+    <input class="sinp" id="kanyouku-level-input" placeholder="例: A1, A5, B2（空欄=全レベル）" style="max-width:400px;margin-bottom:14px">
+    <button class="msbtn" style="background:linear-gradient(135deg,#6a1a6e,#c05adb);justify-content:center" onclick="confirmKanyoukuLevel()">
+      <span class="msi">✓</span>
+      <div class="mst"><div>この範囲で練習する</div><div class="mss">空欄ならすべてのレベルからランダム</div></div>
+    </button>
+  </div>
+</div>
+
 <!-- ═══ KANYOUKU MODE SELECT ═══ -->
 <div class="scr" id="s-kanyouku-select">
-  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">✋ 慣用句練習</div></div>
+  <div class="hdr"><button class="bk" onclick="goKanyoukuLevelSelect()">←</button><div class="htitle">✋ 慣用句練習</div></div>
   <div class="mode-select">
     <div class="mode-select-title">モードを選んでね</div>
     <button class="msbtn ms-ana" onclick="startKanyoukuMode('ana')">
@@ -1266,6 +1279,7 @@ function showGairaigoResult(){
 let KANYOUKU=[], SKA={};
 let kaPool=[], kaIdx=0, kaOk=0, kaNg=0, kaAns=false, kaMode='ana';
 let kaTimerSec=300, kaTimerInterval=null;
+let kaLevelFilter=''; // レベルフィルター（空文字=全レベル）
 
 async function loadKanyouku(){
   if(KANYOUKU.length) return;
@@ -1292,13 +1306,40 @@ async function loadKanyouku(){
   document.querySelector('.loading-text').textContent='語句データを読み込み中…';
 }
 
-async function goKanyouku(){ await loadKanyouku(); if(!KANYOUKU.length) return; show('s-kanyouku-select'); }
+async function goKanyouku(){ 
+  await loadKanyouku(); 
+  if(!KANYOUKU.length) return; 
+  kaLevelFilter=''; 
+  document.getElementById('kanyouku-level-input').value=''; 
+  show('s-kanyouku-level'); 
+}
+
+function goKanyoukuLevelSelect(){ 
+  show('s-kanyouku-level'); 
+}
+
+function confirmKanyoukuLevel(){
+  const input=document.getElementById('kanyouku-level-input').value.trim().toUpperCase();
+  kaLevelFilter=input; // 空欄なら''のまま
+  show('s-kanyouku-select');
+}
 
 function startKanyoukuMode(mode){ kaMode=mode; startKanyouku(); show('s-kanyouku'); }
 
 function startKanyouku(){
-  if(KANYOUKU.length<4){ showToast('慣用句データが少なすぎます'); return; }
-  kaPool=shuffle([...KANYOUKU,...KANYOUKU,...KANYOUKU]);
+  // レベルフィルター適用
+  let filtered=KANYOUKU;
+  if(kaLevelFilter){
+    filtered=KANYOUKU.filter(k=>k.lv===kaLevelFilter);
+    if(filtered.length<4){ 
+      showToast(`${kaLevelFilter}レベルの慣用句が少なすぎます（${filtered.length}問）`); 
+      return; 
+    }
+  } else {
+    if(KANYOUKU.length<4){ showToast('慣用句データが少なすぎます'); return; }
+  }
+  
+  kaPool=shuffle([...filtered,...filtered,...filtered]);
   kaIdx=0; kaOk=0; kaNg=0; kaTimerSec=300;
   updateKanyoukuScore(); updateKanyoukuTimerDisplay();
   const el=document.getElementById('kanyouku-timer'); el.style.background='linear-gradient(135deg,#6a1a6e,#c05adb)';
