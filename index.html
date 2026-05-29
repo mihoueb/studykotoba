@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -58,6 +59,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 .m-gairaigo{background:linear-gradient(135deg,#1a6e3c,#2ecc71);}
 .m-kanyouku{background:linear-gradient(135deg,#6a1a6e,#c05adb);}
 .m-yojijukugo{background:linear-gradient(135deg,#c0392b,#e74c3c);}
+.m-sanjigo{background:linear-gradient(135deg,#d4380d,#fa8c16);}
 .mode-select{width:100%;max-width:400px;margin-top:12px;}
 .mode-select-title{font-family:'Kaisei Decol',serif;font-size:1.1rem;font-weight:700;text-align:center;margin-bottom:16px;color:var(--deep);}
 .msbtn{width:100%;padding:20px 22px;border:none;border-radius:18px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;gap:14px;box-shadow:var(--sh2);transition:transform .15s;text-align:left;color:white;}
@@ -259,6 +261,12 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
     <span class="badge" id="yoji-badge">0問</span>
     <span class="ma">›</span>
   </button>
+  <button class="mbtn m-sanjigo" onclick="goSanjigo()">
+    <span class="mi">📝</span>
+    <div class="mt"><div>三字の熟語クイズ</div><div style="font-size:.72rem;opacity:.8;font-weight:400">意味・漢字の6択で完全習得</div></div>
+    <span class="badge" id="sanjigo-badge">0問</span>
+    <span class="ma">›</span>
+  </button>
 </div>
 
 <!-- ═══ SRS SESSION ═══ -->
@@ -377,6 +385,8 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
   <div class="hist-bars" id="hist-bars-gairaigo"></div>
   <div class="hist-title">✋ 慣用句 レベル別正答率</div>
   <div class="hist-bars" id="hist-bars-kanyouku"></div>
+  <div class="hist-title">📝 三字の熟語 レベル別正答率</div>
+  <div class="hist-bars" id="hist-bars-sanjigo"></div>
   <div class="hist-title">⏰ 次回出題スケジュール（和語 上位15語）</div>
   <div class="due-list" id="due-list"></div>
 </div>
@@ -391,6 +401,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
     <button class="flbtn" onclick="setListCat('kotowaza',this)">📜 ことわざ</button>
     <button class="flbtn" onclick="setListCat('gairaigo',this)">🌍 外来語</button>
     <button class="flbtn" onclick="setListCat('kanyouku',this)">✋ 慣用句</button>
+    <button class="flbtn" onclick="setListCat('sanjigo',this)">📝 三字熟語</button>
   </div>
   <!-- レベルフィルター -->
   <div class="flrow" id="flrow"></div>
@@ -641,6 +652,55 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
     <button class="nxtbtn" id="yoji-nxtbtn" onclick="nextYoji()">つぎの問題 →</button>
   </div>
 </div>
+
+<!-- ═══ SANJIGO MODE SELECT ═══ -->
+<div class="scr" id="s-sanjigo-select">
+  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">📝 三字の熟語クイズ</div></div>
+  <div class="mode-select">
+    <div class="mode-select-title">① 出題レベルを選んでね</div>
+    <div id="sanjigo-lv-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-bottom:20px"></div>
+    <div class="mode-select-title">② モードを選んでね</div>
+    <button id="sjm-meaning6" class="msbtn" style="background:linear-gradient(135deg,#0e8a7a,#1ab59e)" onclick="selectSanjigoMode('meaning6')">
+      <span class="msi">💡</span>
+      <div class="mst"><div>熟語 → 意味（6択）</div><div class="mss">三字熟語を見て意味を6択で選ぶ</div></div>
+      <span style="font-size:1.1rem;opacity:.5">›</span>
+    </button>
+    <button id="sjm-kanji6" class="msbtn" style="background:linear-gradient(135deg,#7c5cbf,#a07de0)" onclick="selectSanjigoMode('kanji6')">
+      <span class="msi">📖</span>
+      <div class="mst"><div>用例 → 熟語（6択）</div><div class="mss">用例を見て三字熟語を6択で選ぶ</div></div>
+      <span style="font-size:1.1rem;opacity:.5">›</span>
+    </button>
+    <button id="sanjigo-start-btn" class="msbtn" style="background:linear-gradient(135deg,#aaa,#ccc);margin-top:8px;justify-content:center;pointer-events:none" onclick="startSanjigo()">
+      <span class="msi">▶️</span>
+      <div class="mst"><div>スタート！</div><div class="mss" id="sanjigo-start-sub">モードを選んでください</div></div>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ SANJIGO QUIZ ═══ -->
+<div class="scr" id="s-sanjigo">
+  <div class="hdr"><button class="bk" onclick="quitSanjigo()">←</button><div class="htitle">📝 三字の熟語クイズ</div><div class="hpill" id="sanjigo-timer" style="background:linear-gradient(135deg,#d4380d,#fa8c16);color:white;font-size:1rem;padding:6px 16px">5:00</div></div>
+  <div class="pbar"><div class="pfill" id="sj-prog"></div></div>
+  <div style="display:flex;gap:8px;width:100%;max-width:460px;margin-bottom:10px">
+    <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
+      <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--grn)" id="sj-ok">0</div>
+      <div style="font-size:.62rem;font-weight:800;color:#aaa">⭐ 正解</div>
+    </div>
+    <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
+      <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--red)" id="sj-ng">0</div>
+      <div style="font-size:.62rem;font-weight:800;color:#aaa">😓 ミス</div>
+    </div>
+    <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
+      <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--pur)" id="sj-total">0</div>
+      <div style="font-size:.62rem;font-weight:800;color:#aaa">📝 合計</div>
+    </div>
+  </div>
+  <div class="qbox"><div class="qlbl" id="sj-qlbl">問題</div><div class="qtxt" id="sj-qtxt">—</div><div class="qsub" id="sj-qsub"></div></div>
+  <div id="sj-cgrid" style="display:grid;gap:8px;width:100%;max-width:460px;margin-bottom:12px"></div>
+  <div class="fb" id="sj-fb"></div>
+  <button class="nxtbtn" id="sj-nxtbtn" onclick="nextSanjigo()">つぎの問題 →</button>
+</div>
+
 
 <!-- RESULT -->
 <div class="rovl" id="rovl">
@@ -943,6 +1003,7 @@ async function goStats(){
     KOTOWAZA.length?Promise.resolve():loadKotowaza(),
     GAIRAIGO.length?Promise.resolve():loadGairaigo(),
     KANYOUKU.length?Promise.resolve():loadKanyouku(),
+    SANJIGO.length?Promise.resolve():loadSanjigo(),
   ]);
 
   // 総合正答率（全カテゴリ合算）
@@ -951,6 +1012,7 @@ async function goStats(){
   KOTOWAZA.forEach(k=>{ const sc=SK[k.k]; if(sc){totalOk+=sc.totalOk||0; totalNg+=sc.totalNg||0;} });
   GAIRAIGO.forEach(g=>{ const sc=SG[g.w]; if(sc){totalOk+=sc.totalOk||0; totalNg+=sc.totalNg||0;} });
   KANYOUKU.forEach(k=>{ const sc=SKA[k.k]; if(sc){totalOk+=sc.totalOk||0; totalNg+=sc.totalNg||0;} });
+  SANJIGO.forEach(s=>{ const sc=SSJ[s.i]; if(sc){totalOk+=sc.totalOk||0; totalNg+=sc.totalNg||0;} });
   const pct=totalOk+totalNg>0?Math.round(totalOk/(totalOk+totalNg)*100):null;
 
   document.getElementById('acc-ok').textContent=totalOk;
@@ -982,6 +1044,10 @@ async function goStats(){
   document.getElementById('hist-bars-kanyouku').innerHTML=calcBarHtml(
     KANYOUKU, k=>{ const sc=SKA[k.k]||{totalOk:0,totalNg:0}; return {ok:sc.totalOk||0, ng:sc.totalNg||0}; }
   );
+  // 三字熟語 レベル別
+  document.getElementById('hist-bars-sanjigo').innerHTML=calcBarHtml(
+    SANJIGO, s=>{ const sc=SSJ[s.i]||{totalOk:0,totalNg:0}; return {ok:sc.totalOk||0, ng:sc.totalNg||0}; }
+  );
 
   // 次回出題スケジュール（和語）
   const dl=document.getElementById('due-list'); dl.innerHTML='';
@@ -1008,6 +1074,7 @@ function setListCat(cat, el){
     cat==='kotowaza' ? (KOTOWAZA.length?Promise.resolve():loadKotowaza()) :
     cat==='gairaigo' ? (GAIRAIGO.length?Promise.resolve():loadGairaigo()) :
     cat==='kanyouku' ? (KANYOUKU.length?Promise.resolve():loadKanyouku()) :
+    cat==='sanjigo'  ? (SANJIGO.length?Promise.resolve():loadSanjigo()) :
     Promise.resolve();
   loadPromise.then(()=>{ setupListFilters(); renderList(); });
 }
@@ -1061,7 +1128,7 @@ function renderList(){
       el.appendChild(d);
     });
 
-  } else { // kanyouku
+  } else if(listCat==='kanyouku'){
     const filtered=KANYOUKU.filter(k=>(!q||k.k.includes(q)||k.m.includes(q)||(k.a&&k.a.includes(q)))&&(listLv==='all'||k.lv===listLv));
     document.getElementById('list-pill').textContent=filtered.length+'問';
     filtered.forEach(k=>{
@@ -1069,6 +1136,18 @@ function renderList(){
       const icon=pct!=null&&pct>=80?'⭐':tot>0&&(pct||0)<50?'🔥':'✋';
       const d=document.createElement('div'); d.className='wcard';
       d.innerHTML=`<div class="wi">${icon}</div><div style="flex:1;min-width:0"><div class="ww">${k.k.replace('□',`<span style="color:var(--pur);font-weight:800">${k.a||'□'}</span>`)}</div><div class="wr">${k.r||''}</div><div class="wm">${k.m}</div>${k.h?`<div style="font-size:.68rem;color:var(--pur);background:var(--pur-l);border-radius:6px;padding:2px 6px;margin-top:3px;display:inline-block">${k.h}</div>`:''}<div class="wtags"><span class="tag tl">Lv.${k.lv}</span>${pct!=null?`<span class="tag ts">正答${pct}%</span>`:''}</div></div>`;
+      el.appendChild(d);
+    });
+
+  } else if(listCat==='sanjigo'){
+    const filtered=SANJIGO.filter(s=>(!q||s.i.includes(q)||s.m.includes(q)||(s.r&&s.r.includes(q)))&&(listLv==='all'||s.lv===listLv));
+    document.getElementById('list-pill').textContent=filtered.length+'語';
+    filtered.forEach(s=>{
+      const sc=SSJ[s.i]||{totalOk:0,totalNg:0}; const tot=sc.totalOk+sc.totalNg; const pct=tot>0?Math.round(sc.totalOk/tot*100):null;
+      const mastered=tot>=3&&pct!=null&&pct>=70;
+      const icon=mastered?'⭐':tot>0&&(pct||0)<50?'🔥':'📝';
+      const d=document.createElement('div'); d.className='wcard';
+      d.innerHTML=`<div class="wi">${icon}</div><div style="flex:1;min-width:0"><div class="ww">${s.i}</div><div class="wr">${s.r||''}</div><div class="wm">${s.m}</div>${s.u?`<div style="font-size:.72rem;color:#999;margin-top:2px">例：${s.u}</div>`:''}<div class="wtags"><span class="tag tl">Lv.${s.lv}</span>${pct!=null?`<span class="tag ts">正答${pct}%</span>`:''}${mastered?'<span class="tag" style="background:var(--grn-l);color:var(--grn)">✓ 習得済み</span>':''}</div></div>`;
       el.appendChild(d);
     });
   }
@@ -1085,7 +1164,9 @@ function setupListFilters(){
     gairaigo: ['all','A1','A2','A3','A4','B1','B2'],
     kanyouku: ['all','A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','B1','B2','B3','B4'],
   };
-  const lvs=lvMap[listCat]||['all'];
+  const lvs=listCat==='sanjigo'
+    ? ['all',...[...new Set(SANJIGO.map(x=>x.lv).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))]
+    : (lvMap[listCat]||['all']);
   const r=document.getElementById('flrow'); r.innerHTML='';
   lvs.forEach(lv=>{
     const b=document.createElement('button'); b.className='flbtn'+(lv===listLv?' on':'');
@@ -1599,6 +1680,194 @@ function showYojiResult(){
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
   document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${yojiOk}問</strong> ／ ミス <strong style="color:var(--red)">${yojiNg}問</strong><br>正答率 <strong>${pct}%</strong>`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); startYojiMode(yojiMode); };
+  document.getElementById('rovl').classList.add('on');
+  if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
+  flushQueue();
+}
+
+
+// ── SANJIGO（三字の熟語）──
+let SANJIGO=[], SSJ={};
+let sjPool=[], sjIdx=0, sjOk=0, sjNg=0, sjAns=false, sjMode='meaning6';
+let sjTimerSec=300, sjTimerInterval=null;
+let sjLvFilter='all', sjLvSelected=true, sjModeSelected=false;
+
+async function loadSanjigo(){
+  if(SANJIGO.length) return;
+  document.getElementById('loading-overlay').classList.remove('hidden');
+  document.querySelector('.loading-text').textContent='三字熟語データを読み込み中…';
+  try {
+    const res=await fetch(`${SHEET_URL}?type=sanjigo`); const data=await res.json();
+    SANJIGO=data.map(row=>({
+      i: row.idiom||'',
+      r: row.reading||'',
+      m: row.meaning||'',
+      u: row.Usage||row.usage||'',
+      lv: String(row.level||''),
+      rowIndex: row.rowIndex,
+      _ok: parseInt(row.correctCount)||0,
+      _total: parseInt(row.totalCount)||0,
+    })).filter(x=>x.i);
+    SSJ=JSON.parse(localStorage.getItem('sanjigo_v1')||'{}');
+    SANJIGO.forEach(s=>{ if(!SSJ[s.i]) SSJ[s.i]={totalOk:0,totalNg:0}; SSJ[s.i].totalOk=s._ok; SSJ[s.i].totalNg=s._total-s._ok; });
+    document.getElementById('sanjigo-badge').textContent=SANJIGO.length+'問';
+  } catch(e){ showToast('⚠️ 三字熟語の読み込みに失敗しました'); console.error(e); }
+  document.getElementById('loading-overlay').classList.add('hidden');
+  document.querySelector('.loading-text').textContent='語句データを読み込み中…';
+}
+
+async function goSanjigo(){
+  await loadSanjigo();
+  if(!SANJIGO.length) return;
+  sjLvFilter='all'; sjLvSelected=true; sjModeSelected=false;
+  buildSanjigoLvButtons();
+  ['sjm-meaning6','sjm-kanji6'].forEach(id=>{ document.getElementById(id).style.outline='none'; document.getElementById(id).style.opacity='1'; });
+  updateSanjigoStartBtn();
+  show('s-sanjigo-select');
+}
+
+function buildSanjigoLvButtons(){
+  const lvs=['all',...[...new Set(SANJIGO.map(x=>x.lv).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))];
+  const grid=document.getElementById('sanjigo-lv-grid'); grid.innerHTML='';
+  lvs.forEach(lv=>{
+    const sel=lv===sjLvFilter;
+    const b=document.createElement('button');
+    const cnt=lv==='all'?SANJIGO.length:SANJIGO.filter(x=>x.lv===lv).length;
+    b.style.cssText=`padding:10px 6px;border:none;border-radius:12px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.82rem;font-weight:800;cursor:pointer;text-align:center;box-shadow:var(--sh);transition:transform .15s;${sel?'background:linear-gradient(135deg,#d4380d,#fa8c16);color:white':'background:white;color:var(--deep)'}`;
+    b.innerHTML=`${lv==='all'?'すべて':lv}<br><span style="font-size:.65rem;font-weight:400;opacity:.75">${cnt}問</span>`;
+    b.onclick=()=>{
+      grid.querySelectorAll('button').forEach(x=>{ x.style.background='white'; x.style.color='var(--deep)'; });
+      b.style.background='linear-gradient(135deg,#d4380d,#fa8c16)'; b.style.color='white';
+      sjLvFilter=lv; sjLvSelected=true; updateSanjigoStartBtn();
+    };
+    grid.appendChild(b);
+  });
+}
+
+function selectSanjigoMode(mode){
+  sjMode=mode; sjModeSelected=true;
+  ['sjm-meaning6','sjm-kanji6'].forEach(id=>{ document.getElementById(id).style.outline='none'; document.getElementById(id).style.opacity='.6'; });
+  document.getElementById('sjm-'+mode).style.opacity='1'; document.getElementById('sjm-'+mode).style.outline='3px solid white';
+  updateSanjigoStartBtn();
+}
+
+function updateSanjigoStartBtn(){
+  const btn=document.getElementById('sanjigo-start-btn');
+  if(sjLvSelected && sjModeSelected){
+    btn.style.background='linear-gradient(135deg,#d4380d,#fa8c16)'; btn.style.pointerEvents='auto';
+    const modeLabel=sjMode==='meaning6'?'熟語→意味':'読み→漢字';
+    const lvLabel=sjLvFilter==='all'?'全レベル':`レベル${sjLvFilter}`;
+    document.getElementById('sanjigo-start-sub').textContent=`${lvLabel} ／ ${modeLabel}`;
+  }
+}
+
+function isSanjigoMastered(item){
+  const sc=SSJ[item.i]||{totalOk:0,totalNg:0};
+  const tot=sc.totalOk+sc.totalNg;
+  return tot>=3&&(sc.totalOk/tot>=0.7);
+}
+
+function startSanjigo(){
+  const filtered=SANJIGO.filter(x=>sjLvFilter==='all'||x.lv===sjLvFilter);
+  if(filtered.length<6){ showToast('データが少なすぎます（6問以上必要）'); return; }
+  // 未習得優先：未習得×3 + 習得済×1
+  const unmastered=shuffle(filtered.filter(x=>!isSanjigoMastered(x)));
+  const mastered=shuffle(filtered.filter(x=>isSanjigoMastered(x)));
+  const base=unmastered.length>=6?unmastered:filtered;
+  sjPool=shuffle([...base,...base,...base,...mastered]);
+  sjIdx=0; sjOk=0; sjNg=0; sjTimerSec=300;
+  updateSanjigoScore();
+  const el=document.getElementById('sanjigo-timer');
+  el.style.background=sjMode==='meaning6'?'linear-gradient(135deg,#0e8a7a,#1ab59e)':'linear-gradient(135deg,#7c5cbf,#a07de0)';
+  el.textContent='5:00';
+  clearInterval(sjTimerInterval);
+  sjTimerInterval=setInterval(()=>{
+    sjTimerSec--; const m=Math.floor(sjTimerSec/60),s=sjTimerSec%60;
+    el.textContent=`${m}:${String(s).padStart(2,'0')}`;
+    if(sjTimerSec<=30) el.style.background='linear-gradient(135deg,#e05252,#f07070)';
+    else if(sjTimerSec<=60) el.style.background='linear-gradient(135deg,#e05252,#f5a623)';
+    if(sjTimerSec<=0){ clearInterval(sjTimerInterval); showSanjigoResult(); }
+  },1000);
+  show('s-sanjigo'); renderSanjigo();
+}
+
+function quitSanjigo(){ clearInterval(sjTimerInterval); flushQueue(); show('s-sanjigo-select'); }
+function updateSanjigoScore(){ document.getElementById('sj-ok').textContent=sjOk; document.getElementById('sj-ng').textContent=sjNg; document.getElementById('sj-total').textContent=sjOk+sjNg; }
+
+function renderSanjigo(){
+  if(sjIdx>=sjPool.length){ sjPool=shuffle(sjPool); sjIdx=0; }
+  sjAns=false; const s=sjPool[sjIdx];
+  document.getElementById('sj-fb').style.display='none';
+  document.getElementById('sj-nxtbtn').style.display='none';
+  document.getElementById('sj-prog').style.width=`${(sjIdx/sjPool.length)*100}%`;
+  const grid=document.getElementById('sj-cgrid');
+  if(sjMode==='meaning6'){
+    document.getElementById('sj-qlbl').textContent='この三字熟語の意味はどれ？';
+    document.getElementById('sj-qtxt').textContent=s.i;
+    document.getElementById('sj-qtxt').style.fontSize='2rem';
+    document.getElementById('sj-qsub').textContent=s.r?`（${s.r}）`:'';
+    grid.style.gridTemplateColumns='1fr';
+    renderSanjigoChoices(makeSanjigoChoices(s,'m'),s.m);
+  } else {
+    document.getElementById('sj-qlbl').textContent='用例に合う三字熟語はどれ？';
+    document.getElementById('sj-qtxt').textContent=s.u||s.i;
+    document.getElementById('sj-qtxt').style.fontSize='1.1rem';
+    document.getElementById('sj-qsub').textContent='';
+    grid.style.gridTemplateColumns='1fr 1fr';
+    renderSanjigoChoices(makeSanjigoChoices(s,'i'),s.i);
+  }
+}
+
+function makeSanjigoChoices(item,key){
+  const sameLv=SANJIGO.filter(x=>x[key]!==item[key]&&x.lv===item.lv);
+  const others=SANJIGO.filter(x=>x[key]!==item[key]&&x.lv!==item.lv);
+  return shuffle([item[key],...shuffle([...sameLv,...others]).slice(0,5).map(x=>x[key])]);
+}
+
+function renderSanjigoChoices(choices,correct){
+  const g=document.getElementById('sj-cgrid'); g.innerHTML='';
+  choices.forEach(c=>{
+    const b=document.createElement('button'); b.className='ch';
+    b.style.fontSize=sjMode==='meaning6'?'.8rem':'.95rem';
+    b.style.lineHeight='1.55';
+    b.textContent=c;
+    b.onclick=()=>chkSanjigo(c,correct,b);
+    g.appendChild(b);
+  });
+}
+
+function chkSanjigo(sel,correct,btn){
+  if(sjAns) return; sjAns=true;
+  document.querySelectorAll('#sj-cgrid .ch').forEach(b=>{ b.disabled=true; if(b.textContent===correct)b.classList.add('ok'); });
+  const ok=sel===correct; if(!ok) btn.classList.add('ng');
+  const s=sjPool[sjIdx];
+  if(!SSJ[s.i]) SSJ[s.i]={totalOk:0,totalNg:0};
+  if(ok){ sjOk++; SSJ[s.i].totalOk++; shootStar('✨'); } else { sjNg++; SSJ[s.i].totalNg++; }
+  localStorage.setItem('sanjigo_v1',JSON.stringify(SSJ)); updateSanjigoScore();
+  updateQueue.push({type:'sanjigo',rowIndex:s.rowIndex,correctCount:SSJ[s.i].totalOk,totalCount:SSJ[s.i].totalOk+SSJ[s.i].totalNg});
+  const mastered=isSanjigoMastered(s);
+  const fb=document.getElementById('sj-fb'); fb.className='fb '+(ok?'ok':'ng');
+  if(ok){
+    const mastTag=mastered?'<span style="font-size:.72rem;background:var(--grn);color:white;border-radius:8px;padding:2px 8px;margin-left:6px">✓ 習得済み</span>':'';
+    fb.innerHTML=`⭐ 正解！${mastTag}`;
+    fb.innerHTML+=`<div style="margin-top:5px;font-size:.82rem;font-weight:400">${sjMode==='meaning6'?s.m:s.i+'（'+s.r+'）　'+s.m}</div>`;
+  } else {
+    fb.innerHTML=`😓 正解は「${correct}」だよ`;
+    fb.innerHTML+=`<div style="margin-top:5px;font-size:.82rem;font-weight:400">${s.i}（${s.r}）　${s.m}</div>`;
+  }
+  fb.style.display='block';
+  if(ok){ setTimeout(()=>nextSanjigo(),500); } else { document.getElementById('sj-nxtbtn').style.display='block'; }
+}
+
+function nextSanjigo(){ sjIdx++; renderSanjigo(); }
+
+function showSanjigoResult(){
+  clearInterval(sjTimerInterval);
+  const total=sjOk+sjNg, pct=total>0?Math.round(sjOk/total*100):0;
+  document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
+  document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
+  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${sjOk}問</strong> ／ ミス <strong style="color:var(--red)">${sjNg}問</strong><br>正答率 <strong>${pct}%</strong>`;
+  document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); startSanjigo(); show('s-sanjigo'); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
   flushQueue();
