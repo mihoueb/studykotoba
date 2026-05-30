@@ -176,6 +176,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 .rbtn2.s{background:linear-gradient(135deg,var(--pur),#a07de0);}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--deep);color:white;padding:11px 24px;border-radius:40px;font-size:.84rem;font-weight:800;box-shadow:var(--sh2);z-index:300;transition:transform .3s;white-space:nowrap;}
 .toast.on{transform:translateX(-50%) translateY(0);}
+@keyframes shufflePulse{0%,100%{box-shadow:0 8px 32px rgba(247,151,30,.45)}50%{box-shadow:0 12px 40px rgba(247,151,30,.75),0 0 0 6px rgba(247,151,30,.15)}}
 @keyframes shoot{0%{transform:translateX(-120px) translateY(120px) rotate(-45deg);opacity:0}10%{opacity:1}100%{transform:translateX(450px) translateY(-450px) rotate(-45deg);opacity:0}}
 .shoot{position:fixed;font-size:1.3rem;pointer-events:none;z-index:400;animation:shoot .85s forwards;}
 .stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
@@ -202,26 +203,16 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
     <span class="streak-num" id="h-streak">0</span>
     <div class="streak-label">🔥 連続学習日数</div>
   </div>
-  <div class="today-card">
-    <div class="today-icon">📅</div>
-    <div class="today-text">
-      <div class="today-title" id="today-title">今日の復習</div>
-      <div class="today-sub" id="today-sub">読み込み中…</div>
+  <button id="shuffle-btn" class="mbtn" onclick="goShuffle()" style="background:linear-gradient(135deg,#f7971e,#ffd200);color:#3a2000;font-size:1.2rem;padding:22px 24px;border-radius:22px;box-shadow:0 8px 32px rgba(247,151,30,.45);margin-bottom:16px;animation:shufflePulse 2.2s ease-in-out infinite;">
+    <span class="mi" style="font-size:2rem">🎲</span>
+    <div class="mt">
+      <div style="font-size:1.15rem;font-weight:800">全問題 Shuffle！</div>
+      <div style="font-size:.75rem;opacity:.75;font-weight:500;margin-top:2px">全ジャンル混合・5分ランダム勝負</div>
     </div>
-    <div class="today-badge" id="today-badge">0語</div>
-  </div>
-  <div class="stat-grid">
-    <div class="stat-c c-grn"><span class="stat-n" id="h-learned">0</span><div class="stat-l">⭐習得</div></div>
-    <div class="stat-c c-sun"><span class="stat-n" id="h-review">0</span><div class="stat-l">📅復習中</div></div>
-    <div class="stat-c c-red"><span class="stat-n" id="h-due">0</span><div class="stat-l">🔴期限</div></div>
-    <div class="stat-c c-pur"><span class="stat-n" id="h-new">0</span><div class="stat-l">🆕未学習</div></div>
-  </div>
-  <button class="mbtn m-srs" onclick="goSRS()">
-    <span class="mi">🧠</span>
-    <div class="mt"><div>SRS復習セッション</div><div style="font-size:.72rem;opacity:.8;font-weight:400">全語句からランダムに復習</div></div>
-    <span class="badge" id="srs-badge">0語</span>
-    <span class="ma">›</span>
+    <span class="badge" id="shuffle-badge" style="background:rgba(0,0,0,.15);color:#3a2000">0問</span>
+    <span class="ma" style="font-size:1.3rem">›</span>
   </button>
+
   <button class="mbtn m-quiz" onclick="goQuiz()">
     <span class="mi">📝</span>
     <div class="mt"><div>和語クイズ</div><div style="font-size:.72rem;opacity:.8;font-weight:400">レベル・モードを選んで5分特訓</div></div>
@@ -267,6 +258,12 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
     <span class="badge" id="sanjigo-badge">0問</span>
     <span class="ma">›</span>
   </button>
+  <div class="stat-grid" style="margin-top:10px">
+    <div class="stat-c c-grn"><span class="stat-n" id="h-learned">0</span><div class="stat-l">⭐習得</div></div>
+    <div class="stat-c c-sun"><span class="stat-n" id="h-review">0</span><div class="stat-l">📅復習中</div></div>
+    <div class="stat-c c-red"><span class="stat-n" id="h-due">0</span><div class="stat-l">🔴期限</div></div>
+    <div class="stat-c c-pur"><span class="stat-n" id="h-new">0</span><div class="stat-l">🆕未学習</div></div>
+  </div>
 </div>
 
 <!-- ═══ SRS SESSION ═══ -->
@@ -299,19 +296,53 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
   </div>
 </div>
 
+
+<!-- ═══ SHUFFLE ═══ -->
+<div class="scr" id="s-shuffle">
+  <div class="hdr"><button class="bk" onclick="quitShuffle()">←</button><div class="htitle">🎲 全問題 Shuffle！</div><div class="hpill" id="shuffle-timer" style="background:linear-gradient(135deg,#f7971e,#ffd200);color:#3a2000;font-size:1rem;padding:6px 16px">5:00</div></div>
+  <div class="pbar"><div class="pfill" id="sh-prog"></div></div>
+  <div style="display:flex;gap:8px;width:100%;max-width:460px;margin-bottom:10px">
+    <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
+      <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--grn)" id="sh-ok">0</div>
+      <div style="font-size:.62rem;font-weight:800;color:#aaa">⭐ 正解</div>
+    </div>
+    <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
+      <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--red)" id="sh-ng">0</div>
+      <div style="font-size:.62rem;font-weight:800;color:#aaa">😓 ミス</div>
+    </div>
+    <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
+      <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--pur)" id="sh-total">0</div>
+      <div style="font-size:.62rem;font-weight:800;color:#aaa">📝 合計</div>
+    </div>
+  </div>
+  <div class="qbox">
+    <div class="qlbl" id="sh-genre-badge" style="font-size:.7rem;padding:2px 10px;border-radius:10px;margin-bottom:6px;display:inline-block">ジャンル</div>
+    <div class="qlbl" id="sh-qlbl">問題</div>
+    <div class="qtxt" id="sh-qtxt" style="font-size:1.6rem">—</div>
+    <div class="qsub" id="sh-qsub"></div>
+  </div>
+  <div id="sh-cgrid" style="display:grid;grid-template-columns:1fr;gap:8px;width:100%;max-width:460px;margin-bottom:12px"></div>
+  <div class="fb" id="sh-fb"></div>
+  <button class="nxtbtn" id="sh-nxtbtn" onclick="nextShuffle()">つぎの問題 →</button>
+</div>
+
 <!-- ═══ QUIZ MODE SELECT ═══ -->
 <div class="scr" id="s-quiz-select">
   <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">📝 和語クイズ</div></div>
   <div class="mode-select">
     <div class="mode-select-title">① レベルを選んでね</div>
-    <div style="display:flex;gap:10px;width:100%;margin-bottom:18px">
-      <button id="qlv-A" class="msbtn ms-choice" style="flex:1;justify-content:center" onclick="selectQuizLevel('A')">
+    <div style="display:flex;gap:8px;width:100%;margin-bottom:18px;flex-wrap:wrap">
+      <button id="qlv-A" class="msbtn ms-choice" style="flex:1;min-width:120px;justify-content:center" onclick="selectQuizLevel('A')">
         <span class="msi">📘</span>
         <div class="mst"><div>Aレベル</div><div class="mss">A1〜A10</div></div>
       </button>
-      <button id="qlv-B" class="msbtn ms-rev" style="flex:1;justify-content:center" onclick="selectQuizLevel('B')">
+      <button id="qlv-B" class="msbtn ms-rev" style="flex:1;min-width:120px;justify-content:center" onclick="selectQuizLevel('B')">
         <span class="msi">📗</span>
         <div class="mst"><div>Bレベル</div><div class="mss">B1〜B4</div></div>
+      </button>
+      <button id="qlv-C" class="msbtn ms-ana" style="flex:1;min-width:120px;justify-content:center" onclick="selectQuizLevel('C')">
+        <span class="msi">📙</span>
+        <div class="mst"><div>Cレベル</div><div class="mss">C1〜</div></div>
       </button>
     </div>
     <div class="mode-select-title">② モードを選んでね</div>
@@ -387,20 +418,29 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
   <div class="hist-bars" id="hist-bars-kanyouku"></div>
   <div class="hist-title">📝 三字の熟語 レベル別正答率</div>
   <div class="hist-bars" id="hist-bars-sanjigo"></div>
-  <div class="hist-title">⏰ 次回出題スケジュール（和語 上位15語）</div>
-  <div class="due-list" id="due-list"></div>
+
 </div>
 
 <!-- ═══ LIST ═══ -->
 <div class="scr" id="s-list">
   <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">📖 語句いちらん</div><div class="hpill" id="list-pill">0語</div></div>
-  <input class="sinp" id="sinp" placeholder="🔍 語句・意味を検索…" oninput="renderList()">
+  <div style="display:flex;gap:6px;width:100%;max-width:460px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
+    <span style="font-size:.68rem;color:#aaa;font-weight:700">絵文字：</span>
+    <span style="font-size:.68rem;background:#fff3d6;color:#c47f00;border-radius:8px;padding:1px 7px">⭐ 習得済み（正答率70%↑）</span>
+    <span style="font-size:.68rem;background:#fde8e8;color:#c0392b;border-radius:8px;padding:1px 7px">🔥 苦手（正答率50%↓）</span>
+    <span style="font-size:.68rem;background:#f0f0f0;color:#888;border-radius:8px;padding:1px 7px">📖 未挑戦・通常</span>
+  </div>
+  <div style="display:flex;gap:6px;width:100%;max-width:460px;margin-bottom:6px">
+    <input class="sinp" id="sinp" placeholder="🔍 語句・意味を検索…" oninput="renderList()" style="flex:1;margin-bottom:0">
+    <button onclick="printList()" style="padding:8px 12px;border:none;border-radius:12px;background:white;box-shadow:var(--sh);font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;color:var(--deep)">🖨 印刷</button>
+  </div>
   <!-- カテゴリ切り替え -->
   <div class="flrow" id="list-cat-row" style="margin-bottom:6px">
     <button class="flbtn on" onclick="setListCat('wago',this)">📖 和語</button>
     <button class="flbtn" onclick="setListCat('kotowaza',this)">📜 ことわざ</button>
     <button class="flbtn" onclick="setListCat('gairaigo',this)">🌍 外来語</button>
     <button class="flbtn" onclick="setListCat('kanyouku',this)">✋ 慣用句</button>
+    <button class="flbtn" onclick="setListCat('yoji',this)">🈶 四字熟語</button>
     <button class="flbtn" onclick="setListCat('sanjigo',this)">📝 三字熟語</button>
   </div>
   <!-- レベルフィルター -->
@@ -412,6 +452,8 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 <div class="scr" id="s-koto-select">
   <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">📜 ことわざ練習</div></div>
   <div class="mode-select">
+    <div class="mode-select-title">① 出題レベルを選んでね</div>
+    <div id="koto-lv-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-bottom:20px"></div>
     <div class="mode-select-title">モードを選んでね</div>
     <button class="msbtn ms-ana" onclick="startKotoMode('ana')">
       <span class="msi">🔲</span>
@@ -501,11 +543,11 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 <div class="scr" id="s-kanyouku-level">
   <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">✋ 慣用句練習</div></div>
   <div class="mode-select">
-    <div class="mode-select-title" style="margin-bottom:12px">やりたいレベルを教えて</div>
-    <input class="sinp" id="kanyouku-level-input" placeholder="例: A1, A5, B2（空欄=全レベル）" style="max-width:400px;margin-bottom:14px">
+    <div class="mode-select-title">レベルを選んでね</div>
+    <div id="kanyouku-lv-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-bottom:20px"></div>
     <button class="msbtn" style="background:linear-gradient(135deg,#6a1a6e,#c05adb);justify-content:center" onclick="confirmKanyoukuLevel()">
       <span class="msi">✓</span>
-      <div class="mst"><div>この範囲で練習する</div><div class="mss">空欄ならすべてのレベルからランダム</div></div>
+      <div class="mst"><div>この範囲で練習する</div><div class="mss" id="kanyouku-lv-sub">すべてのレベルからランダム</div></div>
     </button>
   </div>
 </div>
@@ -569,6 +611,8 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 <div class="scr" id="s-yoji-select">
   <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">🈶 四字熟語クイズ</div></div>
   <div class="mode-select">
+    <div class="mode-select-title">① 出題レベルを選んでね</div>
+    <div id="yoji-lv-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-bottom:20px"></div>
     <div class="mode-select-title">モードを選んでね</div>
     <button class="msbtn" style="background:linear-gradient(135deg,#c0392b,#e74c3c)" onclick="startYojiMode('writing')">
       <span class="msi">✏️</span>
@@ -807,12 +851,7 @@ function updateHome(){
   document.getElementById('h-due').textContent=due.length;
   document.getElementById('h-new').textContent=nw.length;
   document.getElementById('srs-badge').textContent=WORDS.length+'語';
-  const total=due.length+Math.min(nw.length,10);
-  document.getElementById('today-title').textContent=total>0?'今日の復習・新規':'今日のノルマ達成！';
-  document.getElementById('today-sub').textContent=total>0?`期限${due.length}語 ＋ 新規${Math.min(nw.length,10)}語`:`本日 ${todayCount}語 学習しました 🎉`;
-  const badge=document.getElementById('today-badge');
-  badge.textContent=total>0?`${total}語`:'完了✓';
-  badge.className='today-badge'+(total===0?' done':'');
+  document.getElementById('shuffle-badge').textContent=(WORDS.length+(KOTOWAZA.length||0)+(GAIRAIGO.length||0)+(KANYOUKU.length||0)+(YOJI.length||0)+(SANJIGO.length||0))+'問';
 }
 
 // ── SRS ──
@@ -1049,15 +1088,6 @@ async function goStats(){
     SANJIGO, s=>{ const sc=SSJ[s.i]||{totalOk:0,totalNg:0}; return {ok:sc.totalOk||0, ng:sc.totalNg||0}; }
   );
 
-  // 次回出題スケジュール（和語）
-  const dl=document.getElementById('due-list'); dl.innerHTML='';
-  [...WORDS].sort((a,b)=>{ const ca=getCard(a),cb=getCard(b); if(!ca.nextDue&&!cb.nextDue)return 0; if(!ca.nextDue)return -1; if(!cb.nextDue)return 1; return new Date(ca.nextDue)-new Date(cb.nextDue); }).slice(0,15).forEach(w=>{
-    const c=getCard(w); let wc,wt;
-    if(!c.nextDue){ wc='due-new'; wt='🆕 NEW'; }
-    else if(c.nextDue<=TODAY){ wc='due-today'; wt='🔴 今日！'; }
-    else{ const diff=Math.round((new Date(c.nextDue)-new Date(TODAY))/(86400000)); wc=diff<=3?'due-soon':'due-later'; wt=diff<=3?`⚡ ${diff}日後`:`✓ ${diff}日後`; }
-    dl.innerHTML+=`<div class="due-item"><div class="due-word">${w.w}<span style="font-size:.7rem;color:#aaa;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:400"> ${w.m.slice(0,15)}…</span></div><div class="due-when ${wc}">${wt}</div></div>`;
-  });
 
   show('s-stats');
 }
@@ -1074,6 +1104,7 @@ function setListCat(cat, el){
     cat==='kotowaza' ? (KOTOWAZA.length?Promise.resolve():loadKotowaza()) :
     cat==='gairaigo' ? (GAIRAIGO.length?Promise.resolve():loadGairaigo()) :
     cat==='kanyouku' ? (KANYOUKU.length?Promise.resolve():loadKanyouku()) :
+    cat==='yoji'     ? (YOJI.length?Promise.resolve():loadYoji()) :
     cat==='sanjigo'  ? (SANJIGO.length?Promise.resolve():loadSanjigo()) :
     Promise.resolve();
   loadPromise.then(()=>{ setupListFilters(); renderList(); });
@@ -1090,7 +1121,13 @@ function renderList(){
   const el=document.getElementById('list-area'); el.innerHTML='';
 
   if(listCat==='wago'){
-    const filtered=WORDS.filter(w=>(!q||w.w.includes(q)||w.m.includes(q))&&(listLv==='all'||w.lv===listLv));
+    const filtered=WORDS.filter(w=>(!q||w.w.includes(q)||w.m.includes(q))&&(listLv==='all'||w.lv===listLv))
+      .sort((a,b)=>{
+        const ca=S[a.w]||{totalOk:0,totalNg:0}, cb=S[b.w]||{totalOk:0,totalNg:0};
+        const ta=ca.totalOk+ca.totalNg, tb=cb.totalOk+cb.totalNg;
+        const pa=ta>0?ca.totalOk/ta:0.5, pb=tb>0?cb.totalOk/tb:0.5;
+        return pa-pb;
+      });
     document.getElementById('list-pill').textContent=filtered.length+'語';
     filtered.forEach(w=>{
       const c=getCard(w); const tot=c.totalOk+c.totalNg; const pct=tot>0?Math.round(c.totalOk/tot*100):null;
@@ -1107,7 +1144,13 @@ function renderList(){
     });
 
   } else if(listCat==='kotowaza'){
-    const filtered=KOTOWAZA.filter(k=>(!q||k.k.includes(q)||k.m.includes(q)||(k.a&&k.a.includes(q)))&&(listLv==='all'||k.lv===listLv));
+    const filtered=KOTOWAZA.filter(k=>(!q||k.k.includes(q)||k.m.includes(q)||(k.a&&k.a.includes(q)))&&(listLv==='all'||k.lv===listLv))
+      .sort((a,b)=>{
+        const sa=SK[a.k]||{totalOk:0,totalNg:0}, sb=SK[b.k]||{totalOk:0,totalNg:0};
+        const ta=sa.totalOk+sa.totalNg, tb=sb.totalOk+sb.totalNg;
+        const pa=ta>0?sa.totalOk/ta:0.5, pb=tb>0?sb.totalOk/tb:0.5;
+        return pa-pb;
+      });
     document.getElementById('list-pill').textContent=filtered.length+'問';
     filtered.forEach(k=>{
       const sc=SK[k.k]||{totalOk:0,totalNg:0}; const tot=sc.totalOk+sc.totalNg; const pct=tot>0?Math.round(sc.totalOk/tot*100):null;
@@ -1118,7 +1161,13 @@ function renderList(){
     });
 
   } else if(listCat==='gairaigo'){
-    const filtered=GAIRAIGO.filter(g=>(!q||g.w.includes(q)||g.m.includes(q))&&(listLv==='all'||g.lv===listLv));
+    const filtered=GAIRAIGO.filter(g=>(!q||g.w.includes(q)||g.m.includes(q))&&(listLv==='all'||g.lv===listLv))
+      .sort((a,b)=>{
+        const sa=SG[a.w]||{totalOk:0,totalNg:0}, sb=SG[b.w]||{totalOk:0,totalNg:0};
+        const ta=sa.totalOk+sa.totalNg, tb=sb.totalOk+sb.totalNg;
+        const pa=ta>0?sa.totalOk/ta:0.5, pb=tb>0?sb.totalOk/tb:0.5;
+        return pa-pb;
+      });
     document.getElementById('list-pill').textContent=filtered.length+'語';
     filtered.forEach(g=>{
       const sc=SG[g.w]||{totalOk:0,totalNg:0}; const tot=sc.totalOk+sc.totalNg; const pct=tot>0?Math.round(sc.totalOk/tot*100):null;
@@ -1129,7 +1178,13 @@ function renderList(){
     });
 
   } else if(listCat==='kanyouku'){
-    const filtered=KANYOUKU.filter(k=>(!q||k.k.includes(q)||k.m.includes(q)||(k.a&&k.a.includes(q)))&&(listLv==='all'||k.lv===listLv));
+    const filtered=KANYOUKU.filter(k=>(!q||k.k.includes(q)||k.m.includes(q)||(k.a&&k.a.includes(q)))&&(listLv==='all'||k.lv===listLv))
+      .sort((a,b)=>{
+        const sa=SKA[a.k]||{totalOk:0,totalNg:0}, sb=SKA[b.k]||{totalOk:0,totalNg:0};
+        const ta=sa.totalOk+sa.totalNg, tb=sb.totalOk+sb.totalNg;
+        const pa=ta>0?sa.totalOk/ta:0.5, pb=tb>0?sb.totalOk/tb:0.5;
+        return pa-pb;
+      });
     document.getElementById('list-pill').textContent=filtered.length+'問';
     filtered.forEach(k=>{
       const sc=SKA[k.k]||{totalOk:0,totalNg:0}; const tot=sc.totalOk+sc.totalNg; const pct=tot>0?Math.round(sc.totalOk/tot*100):null;
@@ -1139,8 +1194,32 @@ function renderList(){
       el.appendChild(d);
     });
 
+  } else if(listCat==='yoji'){
+    const filtered=YOJI.filter(y=>(!q||y.i.includes(q)||y.m.includes(q)||(y.r&&y.r.includes(q)))&&(listLv==='all'||y.lv===listLv))
+      .sort((a,b)=>{
+        const sa=SY[a.i]||{totalOk:0,totalNg:0}, sb=SY[b.i]||{totalOk:0,totalNg:0};
+        const ta=sa.totalOk+sa.totalNg, tb=sb.totalOk+sb.totalNg;
+        const pa=ta>0?sa.totalOk/ta:0.5, pb=tb>0?sb.totalOk/tb:0.5;
+        return pa-pb;
+      });
+    document.getElementById('list-pill').textContent=filtered.length+'語';
+    filtered.forEach(y=>{
+      const sc=SY[y.i]||{totalOk:0,totalNg:0}; const tot=sc.totalOk+sc.totalNg; const pct=tot>0?Math.round(sc.totalOk/tot*100):null;
+      const mastered=tot>=3&&pct!=null&&pct>=70;
+      const icon=mastered?'⭐':tot>0&&(pct||0)<50?'🔥':'🈶';
+      const d=document.createElement('div'); d.className='wcard';
+      d.innerHTML=`<div class="wi">${icon}</div><div style="flex:1;min-width:0"><div class="ww">${y.i}</div><div class="wr">${y.r||''}</div><div class="wm">${y.m}</div><div class="wtags"><span class="tag tl">Lv.${y.lv}</span>${pct!=null?`<span class="tag ts">正答${pct}%</span>`:''}${mastered?'<span class="tag" style="background:var(--grn-l);color:var(--grn)">✓ 習得済み</span>':''}</div></div>`;
+      el.appendChild(d);
+    });
+
   } else if(listCat==='sanjigo'){
-    const filtered=SANJIGO.filter(s=>(!q||s.i.includes(q)||s.m.includes(q)||(s.r&&s.r.includes(q)))&&(listLv==='all'||s.lv===listLv));
+    const filtered=SANJIGO.filter(s=>(!q||s.i.includes(q)||s.m.includes(q)||(s.r&&s.r.includes(q)))&&(listLv==='all'||s.lv===listLv))
+      .sort((a,b)=>{
+        const sa=SSJ[a.i]||{totalOk:0,totalNg:0}, sb=SSJ[b.i]||{totalOk:0,totalNg:0};
+        const ta=sa.totalOk+sa.totalNg, tb=sb.totalOk+sb.totalNg;
+        const pa=ta>0?sa.totalOk/ta:0.5, pb=tb>0?sb.totalOk/tb:0.5;
+        return pa-pb;
+      });
     document.getElementById('list-pill').textContent=filtered.length+'語';
     filtered.forEach(s=>{
       const sc=SSJ[s.i]||{totalOk:0,totalNg:0}; const tot=sc.totalOk+sc.totalNg; const pct=tot>0?Math.round(sc.totalOk/tot*100):null;
@@ -1159,13 +1238,14 @@ function renderList(){
 
 function setupListFilters(){
   const lvMap={
-    wago:     ['all','A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','B1','B2','B3','B4'],
+    wago:     ['all','A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','B1','B2','B3','B4','C1','C2','C3','C4'],
     kotowaza: ['all','A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','B1','B2','B3','B4','B5','B6'],
     gairaigo: ['all','A1','A2','A3','A4','B1','B2'],
     kanyouku: ['all','A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','B1','B2','B3','B4'],
+    yoji:     ['all','A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','B1','B2','B3','B4'],
   };
-  const lvs=listCat==='sanjigo'
-    ? ['all',...[...new Set(SANJIGO.map(x=>x.lv).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))]
+  const lvs=listCat==='sanjigo'||listCat==='yoji'&&!lvMap[listCat]
+    ? ['all',...[...new Set((listCat==='yoji'?YOJI:SANJIGO).map(x=>x.lv).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))]
     : (lvMap[listCat]||['all']);
   const r=document.getElementById('flrow'); r.innerHTML='';
   lvs.forEach(lv=>{
@@ -1178,6 +1258,26 @@ function setupListFilters(){
 
 // ── KOTOWAZA ──
 let KOTOWAZA=[], SK={};
+let kotoLvFilter='all';
+
+function buildKotoLvButtons(){
+  const lvs=['all',...[...new Set(KOTOWAZA.map(x=>x.lv).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))];
+  const grid=document.getElementById('koto-lv-grid'); if(!grid) return; grid.innerHTML='';
+  lvs.forEach(lv=>{
+    const sel=lv===kotoLvFilter;
+    const b=document.createElement('button');
+    const cnt=lv==='all'?KOTOWAZA.length:KOTOWAZA.filter(x=>x.lv===lv).length;
+    b.style.cssText=`padding:10px 6px;border:none;border-radius:12px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.82rem;font-weight:800;cursor:pointer;text-align:center;box-shadow:var(--sh);transition:transform .15s;${sel?'background:linear-gradient(135deg,#8b5a2b,#c49a6c);color:white':'background:white;color:var(--deep)'}`;
+    b.innerHTML=`${lv==='all'?'すべて':lv}<br><span style="font-size:.65rem;font-weight:400;opacity:.75">${cnt}問</span>`;
+    b.onclick=()=>{
+      grid.querySelectorAll('button').forEach(x=>{ x.style.background='white'; x.style.color='var(--deep)'; });
+      b.style.background='linear-gradient(135deg,#8b5a2b,#c49a6c)'; b.style.color='white';
+      kotoLvFilter=lv;
+    };
+    grid.appendChild(b);
+  });
+}
+
 let kotoPool=[], kotoIdx=0, kotoOk=0, kotoNg=0, kotoAns=false, kotoMode='ana';
 let kotoTimerSec=300, kotoTimerInterval=null;
 async function loadKotowaza(){
@@ -1387,21 +1487,43 @@ async function loadKanyouku(){
   document.querySelector('.loading-text').textContent='語句データを読み込み中…';
 }
 
-async function goKanyouku(){ 
-  await loadKanyouku(); 
-  if(!KANYOUKU.length) return; 
-  kaLevelFilter=''; 
-  document.getElementById('kanyouku-level-input').value=''; 
-  show('s-kanyouku-level'); 
+let kanyoukuLvFilter='all';
+
+function buildKanyoukuLvButtons(){
+  const lvs=['all',...[...new Set(KANYOUKU.map(x=>x.lv).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))];
+  const grid=document.getElementById('kanyouku-lv-grid'); if(!grid) return; grid.innerHTML='';
+  lvs.forEach(lv=>{
+    const sel=lv===kanyoukuLvFilter;
+    const b=document.createElement('button');
+    const cnt=lv==='all'?KANYOUKU.length:KANYOUKU.filter(x=>x.lv===lv).length;
+    b.style.cssText=`padding:10px 6px;border:none;border-radius:12px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.82rem;font-weight:800;cursor:pointer;text-align:center;box-shadow:var(--sh);transition:transform .15s;${sel?'background:linear-gradient(135deg,#6a1a6e,#c05adb);color:white':'background:white;color:var(--deep)'}`;
+    b.innerHTML=`${lv==='all'?'すべて':lv}<br><span style="font-size:.65rem;font-weight:400;opacity:.75">${cnt}問</span>`;
+    b.onclick=()=>{
+      grid.querySelectorAll('button').forEach(x=>{ x.style.background='white'; x.style.color='var(--deep)'; });
+      b.style.background='linear-gradient(135deg,#6a1a6e,#c05adb)'; b.style.color='white';
+      kanyoukuLvFilter=lv;
+      const sub=document.getElementById('kanyouku-lv-sub');
+      if(sub) sub.textContent=lv==='all'?'すべてのレベルからランダム':`レベル${lv}のみ出題`;
+    };
+    grid.appendChild(b);
+  });
 }
 
-function goKanyoukuLevelSelect(){ 
-  show('s-kanyouku-level'); 
+async function goKanyouku(){
+  await loadKanyouku();
+  if(!KANYOUKU.length) return;
+  kanyoukuLvFilter='all'; kaLevelFilter='';
+  buildKanyoukuLvButtons();
+  show('s-kanyouku-level');
+}
+
+function goKanyoukuLevelSelect(){
+  buildKanyoukuLvButtons();
+  show('s-kanyouku-level');
 }
 
 function confirmKanyoukuLevel(){
-  const input=document.getElementById('kanyouku-level-input').value.trim().toUpperCase();
-  kaLevelFilter=input; // 空欄なら''のまま
+  kaLevelFilter=kanyoukuLvFilter==='all'?'':kanyoukuLvFilter;
   show('s-kanyouku-select');
 }
 
@@ -1534,6 +1656,25 @@ function showKanyoukuResult(){
 
 // ── YOJIJUKUGO ──
 let YOJI=[], SY={};
+
+function buildYojiLvButtons(){
+  const lvs=['all',...[...new Set(YOJI.map(x=>x.lv).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))];
+  const grid=document.getElementById('yoji-lv-grid'); if(!grid) return; grid.innerHTML='';
+  lvs.forEach(lv=>{
+    const sel=lv===yojiLvFilter;
+    const b=document.createElement('button');
+    const cnt=lv==='all'?YOJI.length:YOJI.filter(x=>x.lv===lv).length;
+    b.style.cssText=`padding:10px 6px;border:none;border-radius:12px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.82rem;font-weight:800;cursor:pointer;text-align:center;box-shadow:var(--sh);transition:transform .15s;${sel?'background:linear-gradient(135deg,#c0392b,#e74c3c);color:white':'background:white;color:var(--deep)'}`;
+    b.innerHTML=`${lv==='all'?'すべて':lv}<br><span style="font-size:.65rem;font-weight:400;opacity:.75">${cnt}問</span>`;
+    b.onclick=()=>{
+      grid.querySelectorAll('button').forEach(x=>{ x.style.background='white'; x.style.color='var(--deep)'; });
+      b.style.background='linear-gradient(135deg,#c0392b,#e74c3c)'; b.style.color='white';
+      yojiLvFilter=lv;
+    };
+    grid.appendChild(b);
+  });
+}
+
 let yojiPool=[], yojiIdx=0, yojiOk=0, yojiNg=0, yojiAns=false, yojiMode='reading';
 let yojiTimerSec=300, yojiTimerInterval=null;
 
@@ -1685,6 +1826,139 @@ function showYojiResult(){
   flushQueue();
 }
 
+
+
+// ── SHUFFLE（全ジャンル混合）──
+let shPool=[], shIdx=0, shOk=0, shNg=0, shAns=false;
+let shTimerSec=300, shTimerInterval=null;
+
+// ジャンルバッジ設定
+const GENRE_BADGE = {
+  wago:     {label:'📖 和語',     bg:'#d0f0eb',color:'#0e8a7a'},
+  kotowaza: {label:'📜 ことわざ', bg:'#e8d5c0',color:'#8b5a2b'},
+  gairaigo: {label:'🌍 外来語',   bg:'#d0f0db',color:'#1a6e3c'},
+  kanyouku: {label:'✋ 慣用句',   bg:'#ede8f8',color:'#7c5cbf'},
+  yoji:     {label:'🈶 四字熟語', bg:'#fde8e8',color:'#c0392b'},
+  sanjigo:  {label:'📝 三字熟語', bg:'#fde8d0',color:'#d4380d'},
+};
+
+async function goShuffle(){
+  // 未ロードのジャンルを全部読み込む
+  await Promise.all([
+    KOTOWAZA.length?Promise.resolve():loadKotowaza(),
+    GAIRAIGO.length?Promise.resolve():loadGairaigo(),
+    KANYOUKU.length?Promise.resolve():loadKanyouku(),
+    YOJI.length?Promise.resolve():loadYoji(),
+    SANJIGO.length?Promise.resolve():loadSanjigo(),
+  ]);
+
+  // 全ジャンルから「意味を答える」形式で問題プールを作る
+  const pool = [];
+  WORDS.forEach(w => pool.push({genre:'wago', q:w.w, sub:w.r?`（${w.r}）`:'', ans:w.m, key:w.w,
+    decoys: WORDS.filter(x=>x.w!==w.w).map(x=>x.m) }));
+  KOTOWAZA.forEach(k => pool.push({genre:'kotowaza', q:k.k.replace('□','＿'), sub:'', ans:k.m, key:k.k,
+    decoys: KOTOWAZA.filter(x=>x.k!==k.k).map(x=>x.m) }));
+  GAIRAIGO.forEach(g => pool.push({genre:'gairaigo', q:g.w, sub:g.r?`（${g.r}）`:'', ans:g.m, key:g.w,
+    decoys: GAIRAIGO.filter(x=>x.w!==g.w).map(x=>x.m) }));
+  KANYOUKU.forEach(k => pool.push({genre:'kanyouku', q:k.k.replace('□','＿'), sub:'', ans:k.m, key:k.k,
+    decoys: KANYOUKU.filter(x=>x.k!==k.k).map(x=>x.m) }));
+  YOJI.forEach(y => pool.push({genre:'yoji', q:y.i, sub:y.r?`（${y.r}）`:'', ans:y.m, key:y.i,
+    decoys: YOJI.filter(x=>x.i!==y.i).map(x=>x.m) }));
+  SANJIGO.forEach(s => pool.push({genre:'sanjigo', q:s.i, sub:s.r?`（${s.r}）`:'', ans:s.m, key:s.i,
+    decoys: SANJIGO.filter(x=>x.i!==s.i).map(x=>x.m) }));
+
+  shPool = shuffle(pool);
+  shIdx=0; shOk=0; shNg=0; shTimerSec=300;
+  updateShuffleScore();
+  document.getElementById('sh-ok').textContent='0';
+  document.getElementById('sh-ng').textContent='0';
+  document.getElementById('sh-total').textContent='0';
+  document.getElementById('shuffle-timer').textContent='5:00';
+  document.getElementById('shuffle-timer').style.background='linear-gradient(135deg,#f7971e,#ffd200)';
+
+  // バッジ更新
+  const total = WORDS.length+KOTOWAZA.length+GAIRAIGO.length+KANYOUKU.length+YOJI.length+SANJIGO.length;
+  document.getElementById('shuffle-badge').textContent=total+'問';
+
+  clearInterval(shTimerInterval);
+  shTimerInterval = setInterval(()=>{
+    shTimerSec--;
+    const m=Math.floor(shTimerSec/60), s=shTimerSec%60;
+    const el=document.getElementById('shuffle-timer');
+    el.textContent=`${m}:${String(s).padStart(2,'0')}`;
+    if(shTimerSec<=30) el.style.background='linear-gradient(135deg,#e05252,#f07070)';
+    else if(shTimerSec<=60) el.style.background='linear-gradient(135deg,#e05252,#f5a623)';
+    if(shTimerSec<=0){ clearInterval(shTimerInterval); showShuffleResult(); }
+  },1000);
+
+  show('s-shuffle'); renderShuffle();
+}
+
+function quitShuffle(){ clearInterval(shTimerInterval); flushQueue(); goHome(); }
+function updateShuffleScore(){
+  document.getElementById('sh-ok').textContent=shOk;
+  document.getElementById('sh-ng').textContent=shNg;
+  document.getElementById('sh-total').textContent=shOk+shNg;
+}
+
+function renderShuffle(){
+  if(shIdx>=shPool.length){ shPool=shuffle(shPool); shIdx=0; }
+  shAns=false;
+  const item=shPool[shIdx];
+  document.getElementById('sh-prog').style.width=`${(shIdx/shPool.length)*100}%`;
+  document.getElementById('sh-fb').style.display='none';
+  document.getElementById('sh-nxtbtn').style.display='none';
+
+  // ジャンルバッジ
+  const ginfo=GENRE_BADGE[item.genre]||{label:item.genre,bg:'#eee',color:'#333'};
+  const badge=document.getElementById('sh-genre-badge');
+  badge.textContent=ginfo.label; badge.style.background=ginfo.bg; badge.style.color=ginfo.color;
+
+  document.getElementById('sh-qlbl').textContent='この語句の意味は？';
+  document.getElementById('sh-qtxt').textContent=item.q;
+  document.getElementById('sh-qsub').textContent=item.sub;
+
+  // 6択: 正解1 + 同ジャンルor全体からdecoy5
+  const decoys=shuffle(item.decoys).slice(0,5);
+  const choices=shuffle([item.ans,...decoys]);
+  const grid=document.getElementById('sh-cgrid'); grid.innerHTML='';
+  choices.forEach(c=>{
+    const b=document.createElement('button'); b.className='ch';
+    b.style.fontSize='.82rem'; b.style.lineHeight='1.5'; b.style.textAlign='left';
+    b.textContent=c;
+    b.onclick=()=>chkShuffle(c,item,b);
+    grid.appendChild(b);
+  });
+}
+
+function chkShuffle(sel, item, btn){
+  if(shAns) return; shAns=true;
+  document.querySelectorAll('#sh-cgrid .ch').forEach(b=>{ b.disabled=true; if(b.textContent===item.ans) b.classList.add('ok'); });
+  const ok=sel===item.ans;
+  if(!ok) btn.classList.add('ng');
+  if(ok){ shOk++; shootStar('✨'); } else { shNg++; }
+  updateShuffleScore();
+  const fb=document.getElementById('sh-fb');
+  fb.className='fb '+(ok?'ok':'ng');
+  fb.innerHTML=ok?`⭐ 正解！<div style="margin-top:4px;font-size:.8rem;font-weight:400">${item.ans}</div>`
+                 :`😓 正解：<div style="margin-top:4px;font-size:.8rem;font-weight:400">${item.ans}</div>`;
+  fb.style.display='block';
+  if(ok){ setTimeout(()=>nextShuffle(),500); } else { document.getElementById('sh-nxtbtn').style.display='block'; }
+}
+
+function nextShuffle(){ shIdx++; renderShuffle(); }
+
+function showShuffleResult(){
+  clearInterval(shTimerInterval);
+  const total=shOk+shNg, pct=total>0?Math.round(shOk/total*100):0;
+  document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'🎲':'💪';
+  document.getElementById('rtit').textContent=pct>=80?'完璧！！':pct>=60?'いい調子！':'まだまだ伸びる！';
+  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${shOk}問</strong> ／ ミス <strong style="color:var(--red)">${shNg}問</strong><br>正答率 <strong>${pct}%</strong>`;
+  document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); goShuffle(); };
+  document.getElementById('rovl').classList.add('on');
+  if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
+  flushQueue();
+}
 
 // ── SANJIGO（三字の熟語）──
 let SANJIGO=[], SSJ={};
@@ -1874,6 +2148,38 @@ function showSanjigoResult(){
 }
 
 // ── FX ──
+
+function printList(){
+  const el=document.getElementById('list-area');
+  const cat=document.querySelector('#list-cat-row .on')?.textContent||'語句';
+  const pwin=window.open('','_blank');
+  pwin.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${cat} - 定着度リスト</title>
+  <style>
+    body{font-family:'M PLUS Rounded 1c',sans-serif;font-size:12px;color:#1a3a5c;margin:20px;line-height:1.6}
+    h1{font-size:16px;margin-bottom:12px;color:#0e8a7a}
+    table{width:100%;border-collapse:collapse}
+    th{background:#e8f4fd;padding:6px 8px;text-align:left;border:1px solid #ccc;font-size:11px}
+    td{padding:5px 8px;border:1px solid #ddd;vertical-align:top}
+    tr:nth-child(even){background:#f9f9f9}
+    .rate{font-weight:700;color:#c0392b}
+    .ok{color:#0e8a7a}
+    @media print{button{display:none}}
+  </style></head><body>
+  <h1>📖 ${cat}　定着度リスト（低い順）</h1>
+  <button onclick="window.print()" style="margin-bottom:12px;padding:6px 14px;border:none;background:#0e8a7a;color:white;border-radius:6px;cursor:pointer">🖨 印刷する</button>
+  <table><tr><th>語句</th><th>読み</th><th>意味</th><th>正答率</th></tr>`);
+  el.querySelectorAll('.wcard').forEach(card=>{
+    const word=card.querySelector('.ww')?.textContent||'';
+    const read=card.querySelector('.wr')?.textContent||'';
+    const mean=card.querySelector('.wm')?.textContent||'';
+    const rate=card.querySelector('.tag.ts')?.textContent||'未挑戦';
+    const cls=rate.includes('%')&&parseInt(rate)>=70?'ok':'rate';
+    pwin.document.write(`<tr><td><strong>${word}</strong></td><td>${read}</td><td>${mean}</td><td class="${cls}">${rate}</td></tr>`);
+  });
+  pwin.document.write('</table></body></html>');
+  pwin.document.close();
+}
+
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2200); }
 function shootStar(e){ const s=document.createElement('div'); s.className='shoot'; s.textContent=e; s.style.left=Math.random()*60+20+'%'; s.style.top=Math.random()*40+30+'%'; document.body.appendChild(s); setTimeout(()=>s.remove(),900); }
 (()=>{ const c=document.getElementById('stars'); ['✦','✧','⭐','🌟','✨'].forEach(e=>{ for(let i=0;i<3;i++){ const s=document.createElement('div'); s.className='star'; s.textContent=e; s.style.left=Math.random()*100+'%'; s.style.top=Math.random()*100+'%'; s.style.fontSize=(12+Math.random()*10)+'px'; s.style.animationDelay=Math.random()*10+'s'; s.style.animationDuration=(8+Math.random()*8)+'s'; c.appendChild(s); } }); })();
