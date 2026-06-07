@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -331,20 +332,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
   <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">📝 和語クイズ</div></div>
   <div class="mode-select">
     <div class="mode-select-title">① レベルを選んでね</div>
-    <div style="display:flex;gap:8px;width:100%;margin-bottom:18px;flex-wrap:wrap">
-      <button id="qlv-A" class="msbtn ms-choice" style="flex:1;min-width:120px;justify-content:center" onclick="selectQuizLevel('A')">
-        <span class="msi">📘</span>
-        <div class="mst"><div>Aレベル</div><div class="mss">A1〜A10</div></div>
-      </button>
-      <button id="qlv-B" class="msbtn ms-rev" style="flex:1;min-width:120px;justify-content:center" onclick="selectQuizLevel('B')">
-        <span class="msi">📗</span>
-        <div class="mst"><div>Bレベル</div><div class="mss">B1〜B4</div></div>
-      </button>
-      <button id="qlv-C" class="msbtn ms-ana" style="flex:1;min-width:120px;justify-content:center" onclick="selectQuizLevel('C')">
-        <span class="msi">📙</span>
-        <div class="mst"><div>Cレベル</div><div class="mss">C1〜</div></div>
-      </button>
-    </div>
+    <div id="quiz-lv-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-bottom:18px"></div>
     <div class="mode-select-title">② モードを選んでね</div>
     <button id="qm-reverse" class="msbtn ms-rev" onclick="selectQuizType('reverse')">
       <span class="msi">🔁</span>
@@ -501,9 +489,22 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
   <button class="nxtbtn" id="koto-nxtbtn" onclick="nextKoto()">つぎの問題 →</button>
 </div>
 
+<!-- ═══ GAIRAIGO LEVEL SELECT ═══ -->
+<div class="scr" id="s-gairaigo-level">
+  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">🌍 外来語クイズ</div></div>
+  <div class="mode-select">
+    <div class="mode-select-title">レベルを選んでね</div>
+    <div id="gairaigo-lv-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-bottom:20px"></div>
+    <button class="msbtn" style="background:linear-gradient(135deg,#1a6e3c,#2ecc71);justify-content:center" onclick="confirmGairaigoLevel()">
+      <span class="msi">✓</span>
+      <div class="mst"><div>この範囲で練習する</div><div class="mss" id="gairaigo-lv-sub">すべてのレベルからランダム</div></div>
+    </button>
+  </div>
+</div>
+
 <!-- ═══ GAIRAIGO MODE SELECT ═══ -->
 <div class="scr" id="s-gairaigo-select">
-  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">🌍 外来語クイズ</div></div>
+  <div class="hdr"><button class="bk" onclick="goGairaigoLevelSelect()">←</button><div class="htitle">🌍 外来語クイズ</div></div>
   <div class="mode-select">
     <div class="mode-select-title">モードを選んでね</div>
     <button class="msbtn ms-mean" onclick="startGairaigoMode('ex')">
@@ -901,23 +902,38 @@ function srsRate(r){
 }
 
 // ── QUIZ ──
-let qPool=[], qIdx=0, qType='reverse', qLv='A', qOk=0, qNg=0, qAns=false;
+let qPool=[], qIdx=0, qType='reverse', qLv='all', qOk=0, qNg=0, qAns=false;
 let qTimerSec=300, qTimerInterval=null;
 let qLvSelected=false, qTypeSelected=false;
+let quizLvFilter='all';
+
+function buildQuizLvButtons(){
+  const lvs=['all',...[...new Set(WORDS.map(x=>x.lv).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))];
+  const grid=document.getElementById('quiz-lv-grid'); if(!grid) return; grid.innerHTML='';
+  lvs.forEach(lv=>{
+    const sel=lv===quizLvFilter;
+    const b=document.createElement('button');
+    const cnt=lv==='all'?WORDS.length:WORDS.filter(x=>x.lv===lv).length;
+    b.style.cssText=`padding:10px 6px;border:none;border-radius:12px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.82rem;font-weight:800;cursor:pointer;text-align:center;box-shadow:var(--sh);transition:transform .15s;${sel?'background:linear-gradient(135deg,#f5a623,#f7c05a);color:white':'background:white;color:var(--deep)'}`;
+    b.innerHTML=`${lv==='all'?'すべて':lv}<br><span style="font-size:.65rem;font-weight:400;opacity:.75">${cnt}語</span>`;
+    b.onclick=()=>{
+      grid.querySelectorAll('button').forEach(x=>{ x.style.background='white'; x.style.color='var(--deep)'; });
+      b.style.background='linear-gradient(135deg,#f5a623,#f7c05a)'; b.style.color='white';
+      quizLvFilter=lv; qLv=lv; qLvSelected=true;
+      updateQuizStartBtn();
+    };
+    grid.appendChild(b);
+  });
+}
+
 function goQuiz(){
-  qLvSelected=false; qTypeSelected=false;
-  ['qlv-A','qlv-B'].forEach(id=>{ document.getElementById(id).style.opacity='1'; document.getElementById(id).style.outline='none'; });
+  qLvSelected=false; qTypeSelected=false; quizLvFilter='all';
+  buildQuizLvButtons();
   ['qm-reverse','qm-ex'].forEach(id=>{ document.getElementById(id).style.opacity='1'; document.getElementById(id).style.outline='none'; });
   const btn=document.getElementById('quiz-start-btn');
   btn.style.background='linear-gradient(135deg,#aaa,#ccc)'; btn.style.pointerEvents='none';
   document.getElementById('quiz-start-sub').textContent='レベルとモードを選んでください';
   show('s-quiz-select');
-}
-function selectQuizLevel(lv){
-  qLv=lv; qLvSelected=true;
-  ['qlv-A','qlv-B'].forEach(id=>{ document.getElementById(id).style.outline='none'; document.getElementById(id).style.opacity='0.5'; });
-  document.getElementById('qlv-'+lv).style.opacity='1'; document.getElementById('qlv-'+lv).style.outline='3px solid white';
-  updateQuizStartBtn();
 }
 function selectQuizType(type){
   qType=type; qTypeSelected=true;
@@ -929,17 +945,18 @@ function updateQuizStartBtn(){
   const btn=document.getElementById('quiz-start-btn');
   if(qLvSelected && qTypeSelected){
     btn.style.background='linear-gradient(135deg,#f5a623,#f7c05a)'; btn.style.pointerEvents='auto';
-    document.getElementById('quiz-start-sub').textContent=`${qLv}レベル ／ ${qType==='reverse'?'和語→意味':'例文→和語'}`;
+    const lvLabel=quizLvFilter==='all'?'全レベル':`Lv.${quizLvFilter}`;
+    document.getElementById('quiz-start-sub').textContent=`${lvLabel} ／ ${qType==='reverse'?'和語→意味':'例文→和語'}`;
   }
 }
 function startQuizMode(){
-  const pool=WORDS.filter(w=>w.lv&&w.lv.startsWith(qLv));
-  if(pool.length<4){ showToast(`${qLv}レベルの語句が少なすぎます`); return; }
+  const pool=quizLvFilter==='all'?WORDS.filter(w=>w.lv):WORDS.filter(w=>w.lv===quizLvFilter);
+  if(pool.length<4){ showToast(`${quizLvFilter==='all'?'':quizLvFilter+'レベルの'}語句が少なすぎます`); return; }
   const filtered=qType==='ex'?pool.filter(w=>w.ex&&w.ex.trim()!==''):pool;
   if(filtered.length<4){ showToast('例文のある語句が少なすぎます'); return; }
   qPool=shuffle([...filtered,...filtered,...filtered]);
   qIdx=0; qOk=0; qNg=0; qTimerSec=300;
-  document.getElementById('q-title').textContent=`⏱ ${qLv}レベル ${qType==='reverse'?'和語→意味':'例文→和語'}`;
+  document.getElementById('q-title').textContent=`⏱ ${quizLvFilter==='all'?'全レベル':'Lv.'+quizLvFilter} ${qType==='reverse'?'和語→意味':'例文→和語'}`;
   const timerEl=document.getElementById('q-timer');
   timerEl.style.background='linear-gradient(135deg,#f5a623,#f7c05a)';
   updateTimerDisplay(); updateScoreDisplay(); renderQ(); show('s-quiz');
@@ -1397,11 +1414,50 @@ async function loadGairaigo(){
   document.getElementById('loading-overlay').classList.add('hidden');
   document.querySelector('.loading-text').textContent='語句データを読み込み中…';
 }
-async function goGairaigo(){ await loadGairaigo(); if(!GAIRAIGO.length) return; show('s-gairaigo-select'); }
+let gairaigoLvFilter='all';
+
+function buildGairaigoLvButtons(){
+  const lvs=['all',...[...new Set(GAIRAIGO.map(x=>x.lv).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))];
+  const grid=document.getElementById('gairaigo-lv-grid'); if(!grid) return; grid.innerHTML='';
+  lvs.forEach(lv=>{
+    const sel=lv===gairaigoLvFilter;
+    const b=document.createElement('button');
+    const cnt=lv==='all'?GAIRAIGO.length:GAIRAIGO.filter(x=>x.lv===lv).length;
+    b.style.cssText=`padding:10px 6px;border:none;border-radius:12px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.82rem;font-weight:800;cursor:pointer;text-align:center;box-shadow:var(--sh);transition:transform .15s;${sel?'background:linear-gradient(135deg,#1a6e3c,#2ecc71);color:white':'background:white;color:var(--deep)'}`;
+    b.innerHTML=`${lv==='all'?'すべて':lv}<br><span style="font-size:.65rem;font-weight:400;opacity:.75">${cnt}語</span>`;
+    b.onclick=()=>{
+      grid.querySelectorAll('button').forEach(x=>{ x.style.background='white'; x.style.color='var(--deep)'; });
+      b.style.background='linear-gradient(135deg,#1a6e3c,#2ecc71)'; b.style.color='white';
+      gairaigoLvFilter=lv;
+      const sub=document.getElementById('gairaigo-lv-sub');
+      if(sub) sub.textContent=lv==='all'?'すべてのレベルからランダム':`レベル${lv}のみ出題`;
+    };
+    grid.appendChild(b);
+  });
+}
+
+async function goGairaigo(){
+  await loadGairaigo();
+  if(!GAIRAIGO.length) return;
+  gairaigoLvFilter='all';
+  buildGairaigoLvButtons();
+  show('s-gairaigo-level');
+}
+
+function goGairaigoLevelSelect(){
+  buildGairaigoLvButtons();
+  show('s-gairaigo-level');
+}
+
+function confirmGairaigoLevel(){
+  show('s-gairaigo-select');
+}
+
 function startGairaigoMode(mode){
   gMode=mode;
-  const pool=gMode==='ex'?GAIRAIGO.filter(g=>g.ex&&g.ex.trim()!==''):GAIRAIGO;
-  if(pool.length<6){ showToast('データが少なすぎます'); return; }
+  let base=gairaigoLvFilter==='all'?GAIRAIGO:GAIRAIGO.filter(g=>g.lv===gairaigoLvFilter);
+  const pool=gMode==='ex'?base.filter(g=>g.ex&&g.ex.trim()!==''):base;
+  if(pool.length<6){ showToast(`${gairaigoLvFilter==='all'?'':gairaigoLvFilter+'レベルの'}データが少なすぎます`); return; }
   gPool=shuffle([...pool,...pool,...pool]);
   gIdx=0; gOk=0; gNg=0; gTimerSec=300;
   updateGairaigoScore();
