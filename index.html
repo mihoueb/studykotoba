@@ -238,7 +238,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
     <span class="mi" style="font-size:2rem">🎲</span>
     <div class="mt">
       <div style="font-size:1.15rem;font-weight:800">全問題 Shuffle！</div>
-      <div style="font-size:.75rem;opacity:.75;font-weight:500;margin-top:2px">全ジャンル混合・5分ランダム勝負</div>
+      <div style="font-size:.75rem;opacity:.75;font-weight:500;margin-top:2px">全ジャンル混合・3分ランダム勝負</div>
     </div>
     <span class="badge" id="shuffle-badge" style="background:rgba(0,0,0,.15);color:#3a2000">0問</span>
     <span class="ma" style="font-size:1.3rem">›</span>
@@ -258,7 +258,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
   </button>
   <button class="mbtn m-quiz" onclick="goQuiz()">
     <span class="mi">📝</span>
-    <div class="mt"><div>和語クイズ</div><div style="font-size:.72rem;opacity:.8;font-weight:400">レベル・モードを選んで5分特訓</div></div>
+    <div class="mt"><div>和語クイズ</div><div style="font-size:.72rem;opacity:.8;font-weight:400">レベル・モードを選んで3分特訓</div></div>
     <span class="ma">›</span>
   </button>
   <button class="mbtn m-stat" onclick="goStats()">
@@ -342,7 +342,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 
 <!-- ═══ SHUFFLE ═══ -->
 <div class="scr" id="s-shuffle">
-  <div class="hdr"><button class="bk" onclick="quitShuffle()">←</button><div class="htitle">🎲 全問題 Shuffle！</div><div class="hpill" id="shuffle-timer" style="background:linear-gradient(135deg,#f7971e,#ffd200);color:#3a2000;font-size:1rem;padding:6px 16px">5:00</div></div>
+  <div class="hdr"><button class="bk" onclick="quitShuffle()">←</button><div class="htitle">🎲 全問題 Shuffle！</div><div class="hpill" id="shuffle-timer" style="background:linear-gradient(135deg,#f7971e,#ffd200);color:#3a2000;font-size:1rem;padding:6px 16px">3:00</div></div>
   <div class="pbar"><div class="pfill" id="sh-prog"></div></div>
   <div style="display:flex;gap:8px;width:100%;max-width:460px;margin-bottom:10px">
     <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
@@ -395,7 +395,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 
 <!-- ═══ QUIZ ═══ -->
 <div class="scr" id="s-quiz">
-  <div class="hdr"><button class="bk" onclick="quitQuiz()">←</button><div class="htitle" id="q-title">⏱ タイムアタック</div><div class="hpill" id="q-timer" style="background:linear-gradient(135deg,#f5a623,#f7c05a);color:white;font-size:1rem;padding:6px 16px">5:00</div></div>
+  <div class="hdr"><button class="bk" onclick="quitQuiz()">←</button><div class="htitle" id="q-title">⏱ タイムアタック</div><div class="hpill" id="q-timer" style="background:linear-gradient(135deg,#f5a623,#f7c05a);color:white;font-size:1rem;padding:6px 16px">3:00</div></div>
   <div style="display:flex;gap:10px;width:100%;max-width:460px;margin-bottom:12px">
     <div style="flex:1;background:white;border-radius:14px;padding:10px 14px;box-shadow:var(--sh);text-align:center">
       <div style="font-family:'Kaisei Decol',serif;font-size:1.6rem;font-weight:700;color:var(--grn)" id="q-ok">0</div>
@@ -511,7 +511,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 
 <!-- ═══ KOTOWAZA ═══ -->
 <div class="scr" id="s-kotowaza">
-  <div class="hdr"><button class="bk" onclick="quitKoto()">←</button><div class="htitle">📜 ことわざ練習</div><div class="hpill" id="koto-timer" style="background:linear-gradient(135deg,#8b5a2b,#c49a6c);color:white;font-size:1rem;padding:6px 16px">5:00</div></div>
+  <div class="hdr"><button class="bk" onclick="quitKoto()">←</button><div class="htitle">📜 ことわざ練習</div><div class="hpill" id="koto-timer" style="background:linear-gradient(135deg,#8b5a2b,#c49a6c);color:white;font-size:1rem;padding:6px 16px">3:00</div></div>
   <div class="pbar"><div class="pfill" id="koto-prog"></div></div>
   <div style="display:flex;gap:8px;width:100%;max-width:460px;margin-bottom:10px">
     <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
@@ -566,7 +566,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 
 <!-- ═══ GAIRAIGO ═══ -->
 <div class="scr" id="s-gairaigo">
-  <div class="hdr"><button class="bk" onclick="quitGairaigo()">←</button><div class="htitle">🌍 外来語クイズ</div><div class="hpill" id="gairaigo-timer" style="background:linear-gradient(135deg,#1a6e3c,#2ecc71);color:white;font-size:1rem;padding:6px 16px">5:00</div></div>
+  <div class="hdr"><button class="bk" onclick="quitGairaigo()">←</button><div class="htitle">🌍 外来語クイズ</div><div class="hpill" id="gairaigo-timer" style="background:linear-gradient(135deg,#1a6e3c,#2ecc71);color:white;font-size:1rem;padding:6px 16px">3:00</div></div>
   <div class="pbar"><div class="pfill" id="gairaigo-prog"></div></div>
   <div style="display:flex;gap:8px;width:100%;max-width:460px;margin-bottom:10px">
     <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
@@ -626,7 +626,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 
 <!-- ═══ KANYOUKU ═══ -->
 <div class="scr" id="s-kanyouku">
-  <div class="hdr"><button class="bk" onclick="quitKanyouku()">←</button><div class="htitle">✋ 慣用句練習</div><div class="hpill" id="kanyouku-timer" style="background:linear-gradient(135deg,#6a1a6e,#c05adb);color:white;font-size:1rem;padding:6px 16px">5:00</div></div>
+  <div class="hdr"><button class="bk" onclick="quitKanyouku()">←</button><div class="htitle">✋ 慣用句練習</div><div class="hpill" id="kanyouku-timer" style="background:linear-gradient(135deg,#6a1a6e,#c05adb);color:white;font-size:1rem;padding:6px 16px">3:00</div></div>
   <div class="pbar"><div class="pfill" id="kanyouku-prog"></div></div>
   <div style="display:flex;gap:8px;width:100%;max-width:460px;margin-bottom:10px">
     <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
@@ -687,7 +687,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 
 <!-- ═══ YOJI ═══ -->
 <div class="scr" id="s-yoji">
-  <div class="hdr"><button class="bk" onclick="quitYoji()">←</button><div class="htitle">🈶 四字熟語クイズ</div><div class="hpill" id="yoji-timer" style="background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;font-size:1rem;padding:6px 16px">5:00</div></div>
+  <div class="hdr"><button class="bk" onclick="quitYoji()">←</button><div class="htitle">🈶 四字熟語クイズ</div><div class="hpill" id="yoji-timer" style="background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;font-size:1rem;padding:6px 16px">3:00</div></div>
   <div class="pbar"><div class="pfill" id="yoji-prog"></div></div>
   <div style="display:flex;gap:8px;width:100%;max-width:460px;margin-bottom:10px">
     <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
@@ -773,7 +773,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 
 <!-- ═══ SANJIGO QUIZ ═══ -->
 <div class="scr" id="s-sanjigo">
-  <div class="hdr"><button class="bk" onclick="quitSanjigo()">←</button><div class="htitle">📝 三字の熟語クイズ</div><div class="hpill" id="sanjigo-timer" style="background:linear-gradient(135deg,#d4380d,#fa8c16);color:white;font-size:1rem;padding:6px 16px">5:00</div></div>
+  <div class="hdr"><button class="bk" onclick="quitSanjigo()">←</button><div class="htitle">📝 三字の熟語クイズ</div><div class="hpill" id="sanjigo-timer" style="background:linear-gradient(135deg,#d4380d,#fa8c16);color:white;font-size:1rem;padding:6px 16px">3:00</div></div>
   <div class="pbar"><div class="pfill" id="sj-prog"></div></div>
   <div style="display:flex;gap:8px;width:100%;max-width:460px;margin-bottom:10px">
     <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
@@ -991,7 +991,7 @@ function srsRate(r){
 
 // ── QUIZ ──
 let qPool=[], qIdx=0, qType='reverse', qLv='all', qOk=0, qNg=0, qAns=false;
-let qTimerSec=300, qTimerInterval=null;
+let qTimerSec=180, qTimerInterval=null;
 let qLvSelected=false, qTypeSelected=false;
 let quizLvFilter='all';
 
@@ -1043,7 +1043,7 @@ function startQuizMode(){
   const filtered=qType==='ex'?pool.filter(w=>w.ex&&w.ex.trim()!==''):pool;
   if(filtered.length<4){ showToast('例文のある語句が少なすぎます'); return; }
   qPool=shuffle([...filtered,...filtered,...filtered]);
-  qIdx=0; qOk=0; qNg=0; qTimerSec=300;
+  qIdx=0; qOk=0; qNg=0; qTimerSec=180;
   document.getElementById('q-title').textContent=`⏱ ${quizLvFilter==='all'?'全レベル':'Lv.'+quizLvFilter} ${qType==='reverse'?'和語→意味':'例文→和語'}`;
   const timerEl=document.getElementById('q-timer');
   timerEl.style.background='linear-gradient(135deg,#f5a623,#f7c05a)';
@@ -1113,7 +1113,7 @@ function showResult(){
   const total=qOk+qNg, pct=total>0?Math.round(qOk/total*100):0;
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
-  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${qOk}問</strong> ／ ミス <strong style="color:var(--red)">${qNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(qOk)}`;
+  document.getElementById('rsco').innerHTML=`3分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${qOk}問</strong> ／ ミス <strong style="color:var(--red)">${qNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(qOk)}`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); show('s-quiz-select'); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
@@ -1398,7 +1398,7 @@ function buildKotoLvButtons(){
 }
 
 let kotoPool=[], kotoIdx=0, kotoOk=0, kotoNg=0, kotoAns=false, kotoMode='ana';
-let kotoTimerSec=300, kotoTimerInterval=null;
+let kotoTimerSec=180, kotoTimerInterval=null;
 async function loadKotowaza(){
   if(KOTOWAZA.length) return;
   document.getElementById('loading-overlay').classList.remove('hidden');
@@ -1420,7 +1420,7 @@ function startKotoMode(mode){ if(!mode) return; kotoMode=mode; startKoto(); show
 function startKoto(){
   if(KOTOWAZA.length<4){ showToast('ことわざデータが少なすぎます'); return; }
   kotoPool=shuffle([...KOTOWAZA,...KOTOWAZA,...KOTOWAZA]);
-  kotoIdx=0; kotoOk=0; kotoNg=0; kotoTimerSec=300;
+  kotoIdx=0; kotoOk=0; kotoNg=0; kotoTimerSec=180;
   updateKotoScore(); updateKotoTimerDisplay();
   const el=document.getElementById('koto-timer'); el.style.background='linear-gradient(135deg,#8b5a2b,#c49a6c)';
   clearInterval(kotoTimerInterval);
@@ -1483,7 +1483,7 @@ function showKotoResult(){
   const total=kotoOk+kotoNg, pct=total>0?Math.round(kotoOk/total*100):0;
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
-  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${kotoOk}問</strong> ／ ミス <strong style="color:var(--red)">${kotoNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(kotoOk)}`;
+  document.getElementById('rsco').innerHTML=`3分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${kotoOk}問</strong> ／ ミス <strong style="color:var(--red)">${kotoNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(kotoOk)}`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); startKoto(); show('s-kotowaza'); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
@@ -1493,7 +1493,7 @@ function showKotoResult(){
 // ── GAIRAIGO ──
 let GAIRAIGO=[], SG={};
 let gPool=[], gIdx=0, gOk=0, gNg=0, gAns=false, gMode='ex';
-let gTimerSec=300, gTimerInterval=null;
+let gTimerSec=180, gTimerInterval=null;
 async function loadGairaigo(){
   if(GAIRAIGO.length) return;
   document.getElementById('loading-overlay').classList.remove('hidden');
@@ -1553,9 +1553,9 @@ function startGairaigoMode(mode){
   const pool=gMode==='ex'?base.filter(g=>g.ex&&g.ex.trim()!==''):base;
   if(pool.length<6){ showToast(`${gairaigoLvFilter==='all'?'':gairaigoLvFilter+'レベルの'}データが少なすぎます`); return; }
   gPool=shuffle([...pool,...pool,...pool]);
-  gIdx=0; gOk=0; gNg=0; gTimerSec=300;
+  gIdx=0; gOk=0; gNg=0; gTimerSec=180;
   updateGairaigoScore();
-  const el=document.getElementById('gairaigo-timer'); el.style.background='linear-gradient(135deg,#1a6e3c,#2ecc71)'; el.textContent='5:00';
+  const el=document.getElementById('gairaigo-timer'); el.style.background='linear-gradient(135deg,#1a6e3c,#2ecc71)'; el.textContent='3:00';
   clearInterval(gTimerInterval);
   gTimerInterval=setInterval(()=>{
     gTimerSec--; const m=Math.floor(gTimerSec/60),s=gTimerSec%60; el.textContent=`${m}:${String(s).padStart(2,'0')}`;
@@ -1607,7 +1607,7 @@ function showGairaigoResult(){
   const total=gOk+gNg, pct=total>0?Math.round(gOk/total*100):0;
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
-  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${gOk}問</strong> ／ ミス <strong style="color:var(--red)">${gNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(gOk)}`;
+  document.getElementById('rsco').innerHTML=`3分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${gOk}問</strong> ／ ミス <strong style="color:var(--red)">${gNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(gOk)}`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); startGairaigoMode(gMode); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
@@ -1617,7 +1617,7 @@ function showGairaigoResult(){
 // ── KANYOUKU ──
 let KANYOUKU=[], SKA={};
 let kaPool=[], kaIdx=0, kaOk=0, kaNg=0, kaAns=false, kaMode='ana';
-let kaTimerSec=300, kaTimerInterval=null;
+let kaTimerSec=180, kaTimerInterval=null;
 let kaLevelFilter=''; // レベルフィルター（空文字=全レベル）
 
 async function loadKanyouku(){
@@ -1701,7 +1701,7 @@ function startKanyouku(){
   }
   
   kaPool=shuffle([...filtered,...filtered,...filtered]);
-  kaIdx=0; kaOk=0; kaNg=0; kaTimerSec=300;
+  kaIdx=0; kaOk=0; kaNg=0; kaTimerSec=180;
   updateKanyoukuScore(); updateKanyoukuTimerDisplay();
   const el=document.getElementById('kanyouku-timer'); el.style.background='linear-gradient(135deg,#6a1a6e,#c05adb)';
   clearInterval(kaTimerInterval);
@@ -1804,7 +1804,7 @@ function showKanyoukuResult(){
   const total=kaOk+kaNg, pct=total>0?Math.round(kaOk/total*100):0;
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
-  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${kaOk}問</strong> ／ ミス <strong style="color:var(--red)">${kaNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(kaOk)}`;
+  document.getElementById('rsco').innerHTML=`3分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${kaOk}問</strong> ／ ミス <strong style="color:var(--red)">${kaNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(kaOk)}`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); startKanyouku(); show('s-kanyouku'); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
@@ -1834,7 +1834,7 @@ function buildYojiLvButtons(){
 }
 
 let yojiPool=[], yojiIdx=0, yojiOk=0, yojiNg=0, yojiAns=false, yojiMode='writing';
-let yojiTimerSec=300, yojiTimerInterval=null;
+let yojiTimerSec=180, yojiTimerInterval=null;
 
 async function loadYoji(){
   if(YOJI.length) return;
@@ -1884,7 +1884,7 @@ function startYojiMode(mode){
   const minPool = mode==='idiom4' ? 4 : 6;
   if(filtered.length < minPool){ showToast('データが少なすぎます（'+minPool+'問以上必要）'); return; }
   yojiPool=shuffle([...filtered,...filtered,...filtered]);
-  yojiIdx=0; yojiOk=0; yojiNg=0; yojiTimerSec=300;
+  yojiIdx=0; yojiOk=0; yojiNg=0; yojiTimerSec=180;
   updateYojiScore(); updateYojiTimerDisplay();
   const el=document.getElementById('yoji-timer');
   const colors={writing:'linear-gradient(135deg,#c0392b,#e74c3c)', meaning6:'linear-gradient(135deg,#8e44ad,#9b59b6)', idiom4:'linear-gradient(135deg,#2471a3,#2e86c1)'};
@@ -1993,7 +1993,7 @@ function showYojiResult(){
   const total=yojiOk+yojiNg, pct=total>0?Math.round(yojiOk/total*100):0;
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
-  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${yojiOk}問</strong> ／ ミス <strong style="color:var(--red)">${yojiNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(yojiOk)}`;
+  document.getElementById('rsco').innerHTML=`3分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${yojiOk}問</strong> ／ ミス <strong style="color:var(--red)">${yojiNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(yojiOk)}`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); startYojiMode(yojiMode); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
@@ -2004,7 +2004,7 @@ function showYojiResult(){
 
 // ── SHUFFLE（全ジャンル混合）──
 let shPool=[], shIdx=0, shOk=0, shNg=0, shAns=false;
-let shTimerSec=300, shTimerInterval=null;
+let shTimerSec=180, shTimerInterval=null;
 
 // ジャンルバッジ設定
 const GENRE_BADGE = {
@@ -2042,12 +2042,12 @@ async function goShuffle(){
     decoys: SANJIGO.filter(x=>x.i!==s.i).map(x=>x.m) }));
 
   shPool = shuffle(pool);
-  shIdx=0; shOk=0; shNg=0; shTimerSec=300;
+  shIdx=0; shOk=0; shNg=0; shTimerSec=180;
   updateShuffleScore();
   document.getElementById('sh-ok').textContent='0';
   document.getElementById('sh-ng').textContent='0';
   document.getElementById('sh-total').textContent='0';
-  document.getElementById('shuffle-timer').textContent='5:00';
+  document.getElementById('shuffle-timer').textContent='3:00';
   document.getElementById('shuffle-timer').style.background='linear-gradient(135deg,#f7971e,#ffd200)';
 
   // バッジ更新
@@ -2151,7 +2151,7 @@ function showShuffleResult(){
   const total=shOk+shNg, pct=total>0?Math.round(shOk/total*100):0;
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'🎲':'💪';
   document.getElementById('rtit').textContent=pct>=80?'完璧！！':pct>=60?'いい調子！':'まだまだ伸びる！';
-  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${shOk}問</strong> ／ ミス <strong style="color:var(--red)">${shNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(shOk)}`;
+  document.getElementById('rsco').innerHTML=`3分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${shOk}問</strong> ／ ミス <strong style="color:var(--red)">${shNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(shOk)}`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); goShuffle(); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
@@ -2161,7 +2161,7 @@ function showShuffleResult(){
 // ── SANJIGO（三字の熟語）──
 let SANJIGO=[], SSJ={};
 let sjPool=[], sjIdx=0, sjOk=0, sjNg=0, sjAns=false, sjMode='meaning6';
-let sjTimerSec=300, sjTimerInterval=null;
+let sjTimerSec=180, sjTimerInterval=null;
 let sjLvFilter='all', sjLvSelected=true, sjModeSelected=false;
 
 async function loadSanjigo(){
@@ -2247,11 +2247,11 @@ function startSanjigo(){
   const mastered=shuffle(filtered.filter(x=>isSanjigoMastered(x)));
   const base=unmastered.length>=6?unmastered:filtered;
   sjPool=shuffle([...base,...base,...base,...mastered]);
-  sjIdx=0; sjOk=0; sjNg=0; sjTimerSec=300;
+  sjIdx=0; sjOk=0; sjNg=0; sjTimerSec=180;
   updateSanjigoScore();
   const el=document.getElementById('sanjigo-timer');
   el.style.background=sjMode==='meaning6'?'linear-gradient(135deg,#0e8a7a,#1ab59e)':'linear-gradient(135deg,#7c5cbf,#a07de0)';
-  el.textContent='5:00';
+  el.textContent='3:00';
   clearInterval(sjTimerInterval);
   sjTimerInterval=setInterval(()=>{
     sjTimerSec--; const m=Math.floor(sjTimerSec/60),s=sjTimerSec%60;
@@ -2337,7 +2337,7 @@ function showSanjigoResult(){
   const total=sjOk+sjNg, pct=total>0?Math.round(sjOk/total*100):0;
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
-  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${sjOk}問</strong> ／ ミス <strong style="color:var(--red)">${sjNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(sjOk)}`;
+  document.getElementById('rsco').innerHTML=`3分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${sjOk}問</strong> ／ ミス <strong style="color:var(--red)">${sjNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(sjOk)}`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); startSanjigo(); show('s-sanjigo'); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
