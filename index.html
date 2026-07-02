@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -185,12 +186,41 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 @keyframes fs{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-16px) rotate(18deg)}}
 .saving-bar{position:fixed;top:0;left:0;right:0;background:linear-gradient(90deg,var(--teal),var(--teal2));color:white;text-align:center;padding:8px;font-size:.8rem;font-weight:800;z-index:400;transform:translateY(-100%);transition:transform .3s;}
 .saving-bar.on{transform:translateY(0);}
+.combo-fx{position:fixed;top:15%;left:50%;z-index:350;font-family:'Kaisei Decol',serif;font-weight:700;font-size:1.6rem;color:#ff6b35;text-shadow:0 2px 12px rgba(255,107,53,.5),0 0 4px white;pointer-events:none;white-space:nowrap;animation:comboPop .9s cubic-bezier(.2,1.6,.4,1) forwards;}
+.combo-fx.c5{font-size:2.1rem;color:#e0529c;text-shadow:0 2px 14px rgba(224,82,156,.55),0 0 4px white;}
+.combo-fx.c10{font-size:2.5rem;background:linear-gradient(90deg,#f5a623,#e0529c,#7c5cbf);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 2px 8px rgba(224,82,156,.5));}
+.combo-fx.c20{font-size:3rem;background:linear-gradient(90deg,#ff6b35,#f5a623,#3ab06a,#3a7bd5,#7c5cbf);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 3px 10px rgba(124,92,191,.6));}
+.combo-fx.off{display:none;}
+@keyframes comboPop{0%{transform:translateX(-50%) scale(.3) rotate(-6deg);opacity:0}30%{transform:translateX(-50%) scale(1.3) rotate(2deg);opacity:1}55%{transform:translateX(-50%) scale(1) rotate(0)}80%{transform:translateX(-50%) scale(1);opacity:1}100%{transform:translateX(-50%) scale(1.05);opacity:0}}
+.sfx-toggle{position:fixed;top:12px;right:12px;z-index:450;width:42px;height:42px;border:none;border-radius:50%;background:white;box-shadow:var(--sh);font-size:1.15rem;cursor:pointer;transition:transform .15s;}
+.sfx-toggle:active{transform:scale(.9);}
+@keyframes gshake{0%,100%{transform:rotate(0)}25%{transform:rotate(-16deg) translateX(-5px)}75%{transform:rotate(16deg) translateX(5px)}}
+@keyframes gpop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+.gacha-stage{width:100%;max-width:460px;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:white;border-radius:24px;box-shadow:var(--sh2);margin-bottom:14px;padding:20px;}
+.gacha-capsule{font-size:5.5rem;line-height:1;}
+.gacha-card{text-align:center;animation:gpop .5s cubic-bezier(.3,1.4,.5,1);}
+.gacha-card .ge{font-size:4.5rem;line-height:1.2;}
+.gacha-card .gn{font-family:'Kaisei Decol',serif;font-size:1.3rem;font-weight:700;margin-top:6px;}
+.gacha-card .gr{display:inline-block;border-radius:12px;padding:3px 14px;font-size:.75rem;font-weight:800;color:white;margin-top:6px;}
+.gacha-card .gnew{font-size:.85rem;font-weight:800;color:var(--sun);margin-top:6px;}
+.gacha-roll{width:100%;max-width:460px;padding:18px;border:none;border-radius:18px;background:linear-gradient(135deg,#e0529c,#f77fbe);color:white;font-family:'M PLUS Rounded 1c',sans-serif;font-size:1.05rem;font-weight:800;cursor:pointer;box-shadow:var(--sh2);margin-bottom:16px;transition:transform .15s;}
+.gacha-roll:active{transform:scale(.97);}
+.gacha-roll.off{background:linear-gradient(135deg,#aaa,#ccc);pointer-events:none;}
+.coll-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;max-width:460px;}
+.coll-item{background:white;border-radius:13px;padding:9px 4px 7px;text-align:center;box-shadow:var(--sh);position:relative;}
+.coll-item .ce{font-size:1.7rem;line-height:1.2;}
+.coll-item .cn{font-size:.56rem;font-weight:800;color:var(--deep);margin-top:3px;line-height:1.3;}
+.coll-item .cr{font-size:.52rem;font-weight:800;border-radius:8px;padding:1px 6px;color:white;display:inline-block;margin-top:2px;}
+.coll-item .cd{position:absolute;top:3px;right:5px;font-size:.58rem;font-weight:800;color:#bbb;}
+.coll-item.locked{opacity:.5;}
+.coll-item.locked .ce{filter:grayscale(1);opacity:.5;}
 @media(max-width:460px){.cgrid{grid-template-columns:1fr}.cword{font-size:2rem}.rating-row{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 <div class="stars" id="stars"></div>
 <div class="saving-bar" id="saving-bar">💾 スプレッドシートに保存中…</div>
+<button class="sfx-toggle" id="sfx-toggle" onclick="toggleSfx()">🔊</button>
 <div class="loading-overlay" id="loading-overlay">
   <div class="loading-spinner"></div>
   <div class="loading-text">語句データを読み込み中…</div>
@@ -214,6 +244,18 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
     <span class="ma" style="font-size:1.3rem">›</span>
   </button>
 
+  <button class="mbtn m-srs" onclick="goSRS()">
+    <span class="mi">🧠</span>
+    <div class="mt"><div>復習カード</div><div style="font-size:.72rem;opacity:.8;font-weight:400">最近解いた問題をカードでおさらい</div></div>
+    <span class="badge" id="srs-badge">0問</span>
+    <span class="ma">›</span>
+  </button>
+  <button class="mbtn" style="background:linear-gradient(135deg,#e0529c,#f77fbe)" onclick="goGacha()">
+    <span class="mi">🎁</span>
+    <div class="mt"><div>ことばガチャ</div><div style="font-size:.72rem;opacity:.8;font-weight:400">正解でポイントを貯めてモンスターをゲット！</div></div>
+    <span class="badge" id="gacha-badge">0pt</span>
+    <span class="ma">›</span>
+  </button>
   <button class="mbtn m-quiz" onclick="goQuiz()">
     <span class="mi">📝</span>
     <div class="mt"><div>和語クイズ</div><div style="font-size:.72rem;opacity:.8;font-weight:400">レベル・モードを選んで5分特訓</div></div>
@@ -269,7 +311,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 
 <!-- ═══ SRS SESSION ═══ -->
 <div class="scr" id="s-srs">
-  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">🧠 SRS復習</div><div class="hpill" id="srs-pill">0/0</div></div>
+  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">🧠 復習カード</div><div class="hpill" id="srs-pill">0/0</div></div>
   <div class="pbar"><div class="pfill" id="srs-prog"></div></div>
   <div class="card-wrap" onclick="srsFlip()">
     <div class="card-inner" id="srs-ci">
@@ -290,10 +332,10 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
   </div>
   <div class="rating-hint" id="rating-hint" style="opacity:.4">↓ どのくらい覚えてた？正直に答えよう</div>
   <div class="rating-row" id="rating-row" style="opacity:.4;pointer-events:none">
-    <button class="rbtn r0" onclick="srsRate(0)"><span class="ri">😵</span><span>全然</span><span class="rint">すぐ再出題</span></button>
-    <button class="rbtn r1" onclick="srsRate(1)"><span class="ri">😓</span><span>うろ覚え</span><span class="rint">1日後</span></button>
-    <button class="rbtn r2" onclick="srsRate(2)"><span class="ri">🤔</span><span>だいたい</span><span class="rint" id="r2-int">3日後</span></button>
-    <button class="rbtn r3" onclick="srsRate(3)"><span class="ri">⭐</span><span>バッチリ</span><span class="rint" id="r3-int">7日後</span></button>
+    <button class="rbtn r0" onclick="srsRate(0)"><span class="ri">😵</span><span>全然</span><span class="rint">もう一回出る</span></button>
+    <button class="rbtn r1" onclick="srsRate(1)"><span class="ri">😓</span><span>うろ覚え</span><span class="rint">ミス記録</span></button>
+    <button class="rbtn r2" onclick="srsRate(2)"><span class="ri">🤔</span><span>だいたい</span><span class="rint">正解記録</span></button>
+    <button class="rbtn r3" onclick="srsRate(3)"><span class="ri">⭐</span><span>バッチリ</span><span class="rint">正解記録</span></button>
   </div>
 </div>
 
@@ -404,6 +446,8 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
   <div class="hist-bars" id="hist-bars-gairaigo"></div>
   <div class="hist-title">✋ 慣用句 レベル別正答率</div>
   <div class="hist-bars" id="hist-bars-kanyouku"></div>
+  <div class="hist-title">🈶 四字熟語 レベル別正答率</div>
+  <div class="hist-bars" id="hist-bars-yoji"></div>
   <div class="hist-title">📝 三字の熟語 レベル別正答率</div>
   <div class="hist-bars" id="hist-bars-sanjigo"></div>
 
@@ -752,6 +796,18 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 </div>
 
 
+<!-- ═══ GACHA ═══ -->
+<div class="scr" id="s-gacha">
+  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">🎁 ことばガチャ</div><div class="hpill" id="gacha-pts-pill">0pt</div></div>
+  <div class="gacha-stage">
+    <div class="gacha-capsule" id="gacha-capsule">🎁</div>
+    <div class="gacha-card" id="gacha-reveal" style="display:none"></div>
+  </div>
+  <button class="gacha-roll" id="gacha-roll-btn" onclick="rollGacha()">ガチャを回す！（20pt）</button>
+  <div class="hist-title">📚 モンスターずかん <span id="coll-count" style="font-size:.85rem;color:var(--teal)"></span></div>
+  <div class="coll-grid" id="coll-grid"></div>
+</div>
+
 <!-- RESULT -->
 <div class="rovl" id="rovl">
   <div class="rcard">
@@ -797,11 +853,11 @@ async function init() {
     if (lastDate !== TODAY) {
       const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
       if (lastDate === yesterday.toDateString()) streak++;
-      else if (lastDate) streak = 0;
+      else streak = 1;
       if (todayDate !== TODAY) { todayCount=0; todayDate=TODAY; localStorage.setItem('wago_today_date',TODAY); localStorage.setItem('wago_today_count','0'); }
       lastDate=TODAY; localStorage.setItem('wago_lastdate',TODAY); localStorage.setItem('wago_streak',streak);
     }
-    saveS(); setupListFilters(); updateHome();
+    saveS(); loadGacha(); seedGachaPts(); setupListFilters(); updateHome();
   } catch(e) { showToast('⚠️ データの読み込みに失敗しました'); console.error(e); }
   document.getElementById('loading-overlay').classList.add('hidden');
 }
@@ -822,8 +878,9 @@ function sm2Update(w, rating){
     c.ef = Math.max(1.3, c.ef + 0.1 - (5-q)*(0.08+(5-q)*0.02));
   }
   const next = new Date(); next.setDate(next.getDate()+c.interval);
-  c.nextDue = next.toDateString(); S[w.w]=c;
+  c.nextDue = next.toDateString(); c.last=Date.now(); c.lastOk=(rating>=2); S[w.w]=c;
   todayCount++; localStorage.setItem('wago_today_count',todayCount); localStorage.setItem('wago_today_date',TODAY);
+  if(rating>=2) addPts(1);
   saveS();
   updateQueue.push({ type:'wago', rowIndex: w.rowIndex, correctCount: c.totalOk, totalCount: c.totalOk+c.totalNg });
 }
@@ -839,6 +896,15 @@ async function flushQueue() {
   setTimeout(()=>document.getElementById('saving-bar').classList.remove('on'), 1200);
 }
 
+// 全ジャンルのlocalStorageから「一度でも解いた問題」の数を数える（未ロードのジャンルも含む）
+function countRecentSolved(){
+  let n=0;
+  ['wago_srs_v2','koto_srs_v1','gairaigo_v1','kanyouku_v1','yoji_v1','sanjigo_v1'].forEach(k=>{
+    try{ const o=JSON.parse(localStorage.getItem(k)||'{}'); Object.values(o).forEach(v=>{ if(v&&v.last) n++; }); }catch(e){}
+  });
+  return n;
+}
+
 function getDue(){ return WORDS.filter(isDue); }
 function getNew(){ return WORDS.filter(isNew); }
 function getLearned(){ return WORDS.filter(w=>{ const c=S[w.w]; return c&&c.reps>=2&&c.interval>=6; }); }
@@ -846,7 +912,7 @@ function getHard(){ return WORDS.filter(w=>{ const c=S[w.w]; if(!c)return false;
 function accRate(){ let ok=0,ng=0; WORDS.forEach(w=>{const c=S[w.w];if(c){ok+=c.totalOk||0;ng+=c.totalNg||0;}}); return {ok,ng,pct:ok+ng>0?Math.round(ok/(ok+ng)*100):null}; }
 
 function show(id){ document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); window.scrollTo(0,0); }
-function goHome(){ updateHome(); show('s-home'); flushQueue(); }
+function goHome(){ combo=0; updateHome(); show('s-home'); flushQueue(); }
 
 function updateHome(){
   if(!WORDS.length) return;
@@ -856,33 +922,52 @@ function updateHome(){
   document.getElementById('h-review').textContent=WORDS.filter(w=>S[w.w]&&!isNew(w)).length;
   document.getElementById('h-due').textContent=due.length;
   document.getElementById('h-new').textContent=nw.length;
-  const srsBadge=document.getElementById('srs-badge'); if(srsBadge) srsBadge.textContent=WORDS.length+'語';
+  const srsBadge=document.getElementById('srs-badge'); if(srsBadge) srsBadge.textContent=Math.min(countRecentSolved(),SRS_LIMIT)+'問';
+  const gBadge=document.getElementById('gacha-badge'); if(gBadge) gBadge.textContent=GA.pts+'pt';
   const shBadge=document.getElementById('shuffle-badge'); if(shBadge) shBadge.textContent=(WORDS.length+(KOTOWAZA.length||0)+(GAIRAIGO.length||0)+(KANYOUKU.length||0)+(YOJI.length||0)+(SANJIGO.length||0))+'問';
 }
 
-// ── SRS ──
+// ── SRS（全ジャンル・最近解いた順の復習カード）──
 let srsQ=[], srsIdx=0, srsFlipped_=false;
-function goSRS(){
-  if(!WORDS.length){ showToast('データを読み込み中…'); return; }
-  srsQ=shuffle([...WORDS]); srsIdx=0; srsFlipped_=false;
+const SRS_LIMIT=20;           // 1セッションの最大枚数
+const SRS_MISS_BONUS=43200000; // 直前ミスは12時間ぶん「より最近」扱いにして優先
+
+async function goSRS(){
+  await Promise.all([
+    KOTOWAZA.length?Promise.resolve():loadKotowaza(),
+    GAIRAIGO.length?Promise.resolve():loadGairaigo(),
+    KANYOUKU.length?Promise.resolve():loadKanyouku(),
+    YOJI.length?Promise.resolve():loadYoji(),
+    SANJIGO.length?Promise.resolve():loadSanjigo(),
+  ]);
+  const items=[];
+  WORDS.forEach(w=>{ const c=S[w.w]; if(c&&c.last) items.push({genre:'wago', front:w.w, read:w.r, mean:w.m, ex:w.ex, key:w.w, rowIndex:w.rowIndex, last:c.last, lastOk:c.lastOk}); });
+  KOTOWAZA.forEach(k=>{ const c=SK[k.k]; if(c&&c.last) items.push({genre:'kotowaza', front:k.k.replace('□',k.a), read:k.r, mean:k.m, ex:'', key:k.k, rowIndex:k.rowIndex, last:c.last, lastOk:c.lastOk}); });
+  GAIRAIGO.forEach(g=>{ const c=SG[g.w]; if(c&&c.last) items.push({genre:'gairaigo', front:g.w, read:g.r, mean:g.m, ex:g.ex, key:g.w, rowIndex:g.rowIndex, last:c.last, lastOk:c.lastOk}); });
+  KANYOUKU.forEach(k=>{ const c=SKA[k.k]; if(c&&c.last) items.push({genre:'kanyouku', front:k.k.replace('□',k.a), read:k.r, mean:k.m, ex:'', key:k.k, rowIndex:k.rowIndex, last:c.last, lastOk:c.lastOk}); });
+  YOJI.forEach(y=>{ const c=SY[y.i]; if(c&&c.last) items.push({genre:'yoji', front:y.i, read:y.r, mean:y.m, ex:'', key:y.i, rowIndex:y.rowIndex, last:c.last, lastOk:c.lastOk}); });
+  SANJIGO.forEach(s=>{ const c=SSJ[s.i]; if(c&&c.last) items.push({genre:'sanjigo', front:s.i, read:s.r, mean:s.m, ex:s.u, key:s.i, rowIndex:s.rowIndex, last:c.last, lastOk:c.lastOk}); });
+  if(!items.length){ showToast('まだ解いた問題がないよ！まずクイズをやってみよう'); return; }
+  items.sort((a,b)=>(b.last+(b.lastOk?0:SRS_MISS_BONUS))-(a.last+(a.lastOk?0:SRS_MISS_BONUS)));
+  srsQ=items.slice(0,SRS_LIMIT);
+  srsIdx=0; srsFlipped_=false;
   show('s-srs'); renderSRS();
 }
+
 function renderSRS(){
-  if(srsIdx>=srsQ.length){ goHome(); showToast(`🎉 セッション完了！${srsQ.length}語学習したよ`); return; }
-  const w=srsQ[srsIdx]; const c=getCard(w);
-  document.getElementById('srs-word').textContent=w.w;
-  document.getElementById('srs-read').textContent=w.r?`（${w.r}）`:'';
-  document.getElementById('srs-ex-front').textContent=w.ex?`例：${w.ex}`:'';
-  document.getElementById('srs-mean').textContent=w.m;
-  document.getElementById('srs-ex').textContent=w.ex?`例：${w.ex}`:'';
+  if(srsIdx>=srsQ.length){ addPts(10); goHome(); showToast(`🎉 復習完了！${srsQ.length}枚やりきって +10pt ボーナス！`); return; }
+  const it=srsQ[srsIdx];
+  document.getElementById('srs-word').textContent=it.front;
+  document.getElementById('srs-read').textContent=it.read?`（${it.read}）`:'';
+  document.getElementById('srs-ex-front').textContent='';
+  document.getElementById('srs-mean').textContent=it.mean;
+  document.getElementById('srs-ex').textContent=it.ex?`例：${it.ex}`:'';
+  const ginfo=GENRE_BADGE[it.genre]||{label:it.genre,bg:'#eee',color:'#333'};
   const b=document.getElementById('srs-badge2');
-  if(isNew(w)){ b.textContent='🆕 NEW'; b.style.background='var(--pur-l)'; b.style.color='var(--pur)'; }
-  else if(isDue(w)&&c.interval>0){ b.textContent=`📅 間隔${c.interval}日`; b.style.background='var(--sun-l)'; b.style.color='var(--sun)'; }
-  else{ b.textContent=`✓ ${c.interval}日間隔`; b.style.background='var(--grn-l)'; b.style.color='var(--grn)'; }
+  b.textContent=`${ginfo.label}｜前回${it.lastOk?'⭕':'❌'}`;
+  b.style.background=ginfo.bg; b.style.color=ginfo.color;
   document.getElementById('srs-pill').textContent=`${srsIdx+1}/${srsQ.length}`;
   document.getElementById('srs-prog').style.width=`${(srsIdx/srsQ.length)*100}%`;
-  document.getElementById('r2-int').textContent=`${Math.round(Math.max(1,c.interval)*c.ef)}日後`;
-  document.getElementById('r3-int').textContent=`${Math.round(Math.max(1,c.interval)*c.ef*1.3)}日後`;
   srsFlipped_=false;
   document.getElementById('srs-ci').classList.remove('flip');
   const rr=document.getElementById('rating-row');
@@ -895,9 +980,12 @@ function srsFlip(){
   if(srsFlipped_){ const rr=document.getElementById('rating-row'); rr.style.opacity='1'; rr.style.pointerEvents='auto'; document.getElementById('rating-hint').style.opacity='1'; }
 }
 function srsRate(r){
-  sm2Update(srsQ[srsIdx], r);
-  if(r>=2) shootStar(r===3?'⭐':'✨');
-  showToast(['😵 すぐ再出題','😓 1日後に出題','🤔 しばらくしたら出題','⭐ よく覚えてる！'][r]);
+  const it=srsQ[srsIdx];
+  const ok=r>=2;
+  recordResult(it, ok);
+  if(r===0) srsQ.push(it); // 「全然」はこのセッションの最後にもう一度出す
+  if(ok){ shootStar(r===3?'⭐':'✨'); sfxOk(0); } else { sfxNg(); }
+  showToast(['😵 あとでもう一回出るよ','😓 ミスとして記録','🤔 正解として記録','⭐ よく覚えてる！'][r]);
   setTimeout(()=>{ srsIdx++; renderSRS(); }, 500);
 }
 
@@ -1009,6 +1097,7 @@ function chkChoice(sel,correct,btn){
   const ok=sel===correct;
   if(!ok)btn.classList.add('ng');
   if(ok){ qOk++; shootStar('✨'); } else { qNg++; }
+  comboHit(ok);
   sm2Update(qPool[qIdx],ok?2:0); updateScoreDisplay();
   const fb=document.getElementById('fb'); const w=qPool[qIdx];
   fb.className='fb '+(ok?'ok':'ng');
@@ -1024,7 +1113,7 @@ function showResult(){
   const total=qOk+qNg, pct=total>0?Math.round(qOk/total*100):0;
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
-  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${qOk}問</strong> ／ ミス <strong style="color:var(--red)">${qNg}問</strong><br>正答率 <strong>${pct}%</strong>`;
+  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${qOk}問</strong> ／ ミス <strong style="color:var(--red)">${qNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(qOk)}`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); show('s-quiz-select'); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
@@ -1064,6 +1153,7 @@ async function goStats(){
     KOTOWAZA.length?Promise.resolve():loadKotowaza(),
     GAIRAIGO.length?Promise.resolve():loadGairaigo(),
     KANYOUKU.length?Promise.resolve():loadKanyouku(),
+    YOJI.length?Promise.resolve():loadYoji(),
     SANJIGO.length?Promise.resolve():loadSanjigo(),
   ]);
 
@@ -1073,6 +1163,7 @@ async function goStats(){
   KOTOWAZA.forEach(k=>{ const sc=SK[k.k]; if(sc){totalOk+=sc.totalOk||0; totalNg+=sc.totalNg||0;} });
   GAIRAIGO.forEach(g=>{ const sc=SG[g.w]; if(sc){totalOk+=sc.totalOk||0; totalNg+=sc.totalNg||0;} });
   KANYOUKU.forEach(k=>{ const sc=SKA[k.k]; if(sc){totalOk+=sc.totalOk||0; totalNg+=sc.totalNg||0;} });
+  YOJI.forEach(y=>{ const sc=SY[y.i]; if(sc){totalOk+=sc.totalOk||0; totalNg+=sc.totalNg||0;} });
   SANJIGO.forEach(s=>{ const sc=SSJ[s.i]; if(sc){totalOk+=sc.totalOk||0; totalNg+=sc.totalNg||0;} });
   const pct=totalOk+totalNg>0?Math.round(totalOk/(totalOk+totalNg)*100):null;
 
@@ -1104,6 +1195,10 @@ async function goStats(){
   // 慣用句 レベル別
   document.getElementById('hist-bars-kanyouku').innerHTML=calcBarHtml(
     KANYOUKU, k=>{ const sc=SKA[k.k]||{totalOk:0,totalNg:0}; return {ok:sc.totalOk||0, ng:sc.totalNg||0}; }
+  );
+  // 四字熟語 レベル別
+  document.getElementById('hist-bars-yoji').innerHTML=calcBarHtml(
+    YOJI, y=>{ const sc=SY[y.i]||{totalOk:0,totalNg:0}; return {ok:sc.totalOk||0, ng:sc.totalNg||0}; }
   );
   // 三字熟語 レベル別
   document.getElementById('hist-bars-sanjigo').innerHTML=calcBarHtml(
@@ -1371,10 +1466,9 @@ function chkKoto(sel,correct,btn){
   document.querySelectorAll('#koto-cgrid .ch').forEach(b=>{ b.disabled=true; if(b.textContent===correct)b.classList.add('ok'); });
   const ok=sel===correct; if(!ok) btn.classList.add('ng');
   const k=kotoPool[kotoIdx];
-  if(!SK[k.k]) SK[k.k]={totalOk:0,totalNg:0};
-  if(ok){ kotoOk++; SK[k.k].totalOk++; shootStar('✨'); } else { kotoNg++; SK[k.k].totalNg++; }
-  localStorage.setItem('koto_srs_v1',JSON.stringify(SK)); updateKotoScore();
-  updateQueue.push({type:'kotowaza',rowIndex:k.rowIndex,correctCount:SK[k.k].totalOk,totalCount:SK[k.k].totalOk+SK[k.k].totalNg});
+  if(ok){ kotoOk++; shootStar('✨'); } else { kotoNg++; }
+  comboHit(ok);
+  recordResult({genre:'kotowaza',key:k.k,rowIndex:k.rowIndex},ok); updateKotoScore();
   const fb=document.getElementById('koto-fb'); fb.className='fb '+(ok?'ok':'ng');
   fb.innerHTML=ok?`⭐ 正解！`:`😓 正解は「${correct}」だよ`;
   if(kotoMode==='ana') fb.innerHTML+=`<div style="margin-top:6px;font-size:.82rem;font-weight:400">${k.k.replace('□',k.a)}　${k.m}</div>`;
@@ -1389,7 +1483,7 @@ function showKotoResult(){
   const total=kotoOk+kotoNg, pct=total>0?Math.round(kotoOk/total*100):0;
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
-  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${kotoOk}問</strong> ／ ミス <strong style="color:var(--red)">${kotoNg}問</strong><br>正答率 <strong>${pct}%</strong>`;
+  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${kotoOk}問</strong> ／ ミス <strong style="color:var(--red)">${kotoNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(kotoOk)}`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); startKoto(); show('s-kotowaza'); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
@@ -1498,10 +1592,9 @@ function chkGairaigo(sel,correct,btn){
   document.querySelectorAll('#gairaigo-cgrid .ch').forEach(b=>{ b.disabled=true; if(b.textContent===correct)b.classList.add('ok'); });
   const ok=sel===correct; if(!ok) btn.classList.add('ng');
   const g=gPool[gIdx];
-  if(!SG[g.w]) SG[g.w]={totalOk:0,totalNg:0};
-  if(ok){ gOk++; SG[g.w].totalOk++; shootStar('✨'); } else { gNg++; SG[g.w].totalNg++; }
-  localStorage.setItem('gairaigo_v1',JSON.stringify(SG)); updateGairaigoScore();
-  updateQueue.push({type:'gairaigo',rowIndex:g.rowIndex,correctCount:SG[g.w].totalOk,totalCount:SG[g.w].totalOk+SG[g.w].totalNg});
+  if(ok){ gOk++; shootStar('✨'); } else { gNg++; }
+  comboHit(ok);
+  recordResult({genre:'gairaigo',key:g.w,rowIndex:g.rowIndex},ok); updateGairaigoScore();
   const fb=document.getElementById('gairaigo-fb'); fb.className='fb '+(ok?'ok':'ng');
   if(ok){ fb.innerHTML=`⭐ 正解！`; fb.innerHTML+=`<div style="margin-top:5px;font-size:.8rem;font-weight:400">${gMode==='ex'?g.m:g.ex||''}</div>`; }
   else { fb.innerHTML=`😓 正解は「${correct}」だよ`; fb.innerHTML+=`<div style="margin-top:5px;font-size:.8rem;font-weight:400">${gMode==='ex'?g.m:g.ex||''}</div>`; }
@@ -1514,7 +1607,7 @@ function showGairaigoResult(){
   const total=gOk+gNg, pct=total>0?Math.round(gOk/total*100):0;
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
-  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${gOk}問</strong> ／ ミス <strong style="color:var(--red)">${gNg}問</strong><br>正答率 <strong>${pct}%</strong>`;
+  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${gOk}問</strong> ／ ミス <strong style="color:var(--red)">${gNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(gOk)}`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); startGairaigoMode(gMode); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
@@ -1693,10 +1786,9 @@ function chkKanyouku(sel,correct,btn){
   document.querySelectorAll('#kanyouku-cgrid .ch').forEach(b=>{ b.disabled=true; if(b.textContent===correct)b.classList.add('ok'); });
   const ok=sel===correct; if(!ok) btn.classList.add('ng');
   const k=kaPool[kaIdx];
-  if(!SKA[k.k]) SKA[k.k]={totalOk:0,totalNg:0};
-  if(ok){ kaOk++; SKA[k.k].totalOk++; shootStar('✨'); } else { kaNg++; SKA[k.k].totalNg++; }
-  localStorage.setItem('kanyouku_v1',JSON.stringify(SKA)); updateKanyoukuScore();
-  updateQueue.push({type:'kanyouku',rowIndex:k.rowIndex,correctCount:SKA[k.k].totalOk,totalCount:SKA[k.k].totalOk+SKA[k.k].totalNg});
+  if(ok){ kaOk++; shootStar('✨'); } else { kaNg++; }
+  comboHit(ok);
+  recordResult({genre:'kanyouku',key:k.k,rowIndex:k.rowIndex},ok); updateKanyoukuScore();
   const fb=document.getElementById('kanyouku-fb'); fb.className='fb '+(ok?'ok':'ng');
   const filledK=k.k.replace('□',k.a);
   fb.innerHTML=ok?`⭐ 正解！`:`😓 正解は「${correct}」だよ`;
@@ -1712,7 +1804,7 @@ function showKanyoukuResult(){
   const total=kaOk+kaNg, pct=total>0?Math.round(kaOk/total*100):0;
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
-  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${kaOk}問</strong> ／ ミス <strong style="color:var(--red)">${kaNg}問</strong><br>正答率 <strong>${pct}%</strong>`;
+  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${kaOk}問</strong> ／ ミス <strong style="color:var(--red)">${kaNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(kaOk)}`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); startKanyouku(); show('s-kanyouku'); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
@@ -1741,7 +1833,7 @@ function buildYojiLvButtons(){
   });
 }
 
-let yojiPool=[], yojiIdx=0, yojiOk=0, yojiNg=0, yojiAns=false, yojiMode='reading';
+let yojiPool=[], yojiIdx=0, yojiOk=0, yojiNg=0, yojiAns=false, yojiMode='writing';
 let yojiTimerSec=300, yojiTimerInterval=null;
 
 async function loadYoji(){
@@ -1795,8 +1887,8 @@ function startYojiMode(mode){
   yojiIdx=0; yojiOk=0; yojiNg=0; yojiTimerSec=300;
   updateYojiScore(); updateYojiTimerDisplay();
   const el=document.getElementById('yoji-timer');
-  const colors={reading:'linear-gradient(135deg,#c0392b,#e74c3c)', meaning6:'linear-gradient(135deg,#8e44ad,#9b59b6)', idiom4:'linear-gradient(135deg,#2471a3,#2e86c1)'};
-  el.style.background=colors[mode]||colors.reading;
+  const colors={writing:'linear-gradient(135deg,#c0392b,#e74c3c)', meaning6:'linear-gradient(135deg,#8e44ad,#9b59b6)', idiom4:'linear-gradient(135deg,#2471a3,#2e86c1)'};
+  el.style.background=colors[mode]||colors.writing;
   clearInterval(yojiTimerInterval);
   yojiTimerInterval=setInterval(()=>{
     yojiTimerSec--; updateYojiTimerDisplay();
@@ -1879,14 +1971,13 @@ function chkYoji(sel, correct, btn){
   document.querySelectorAll('#yoji-cgrid .ch').forEach(b=>{ b.disabled=true; if(b.textContent===correct)b.classList.add('ok'); });
   const ok=sel===correct; if(!ok) btn.classList.add('ng');
   const y=yojiPool[yojiIdx];
-  if(!SY[y.i]) SY[y.i]={totalOk:0,totalNg:0};
-  if(ok){ yojiOk++; SY[y.i].totalOk++; shootStar('✨'); } else { yojiNg++; SY[y.i].totalNg++; }
-  localStorage.setItem('yoji_v1',JSON.stringify(SY)); updateYojiScore();
-  updateQueue.push({type:'yoji',rowIndex:y.rowIndex,correctCount:SY[y.i].totalOk,totalCount:SY[y.i].totalOk+SY[y.i].totalNg});
+  if(ok){ yojiOk++; shootStar('✨'); } else { yojiNg++; }
+  comboHit(ok);
+  recordResult({genre:'yoji',key:y.i,rowIndex:y.rowIndex},ok); updateYojiScore();
   const fb=document.getElementById('yoji-fb'); fb.className='fb '+(ok?'ok':'ng');
   fb.innerHTML=ok?`⭐ 正解！`:`😓 正解は「${correct}」だよ`;
   // フィードバックに補足
-  if(yojiMode==='reading'||yojiMode==='meaning6'){
+  if(yojiMode==='meaning6'){
     fb.innerHTML+=`<div style="margin-top:5px;font-size:.82rem;font-weight:400">${y.i}（${y.r}）　${y.m}</div>`;
   } else {
     fb.innerHTML+=`<div style="margin-top:5px;font-size:.82rem;font-weight:400">${y.m}</div>`;
@@ -1902,7 +1993,7 @@ function showYojiResult(){
   const total=yojiOk+yojiNg, pct=total>0?Math.round(yojiOk/total*100):0;
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
-  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${yojiOk}問</strong> ／ ミス <strong style="color:var(--red)">${yojiNg}問</strong><br>正答率 <strong>${pct}%</strong>`;
+  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${yojiOk}問</strong> ／ ミス <strong style="color:var(--red)">${yojiNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(yojiOk)}`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); startYojiMode(yojiMode); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
@@ -1937,17 +2028,17 @@ async function goShuffle(){
 
   // 全ジャンルから「意味を答える」形式で問題プールを作る
   const pool = [];
-  WORDS.forEach(w => pool.push({genre:'wago', q:w.w, sub:w.r?`（${w.r}）`:'', ans:w.m, key:w.w,
+  WORDS.forEach(w => pool.push({genre:'wago', q:w.w, sub:w.r?`（${w.r}）`:'', ans:w.m, key:w.w, rowIndex:w.rowIndex,
     decoys: WORDS.filter(x=>x.w!==w.w).map(x=>x.m) }));
-  KOTOWAZA.forEach(k => pool.push({genre:'kotowaza', q:k.k.replace('□','＿'), sub:'', ans:k.m, key:k.k,
+  KOTOWAZA.forEach(k => pool.push({genre:'kotowaza', q:k.k.replace('□','＿'), sub:'', ans:k.m, key:k.k, rowIndex:k.rowIndex,
     decoys: KOTOWAZA.filter(x=>x.k!==k.k).map(x=>x.m) }));
-  GAIRAIGO.forEach(g => pool.push({genre:'gairaigo', q:g.w, sub:g.r?`（${g.r}）`:'', ans:g.m, key:g.w,
+  GAIRAIGO.forEach(g => pool.push({genre:'gairaigo', q:g.w, sub:g.r?`（${g.r}）`:'', ans:g.m, key:g.w, rowIndex:g.rowIndex,
     decoys: GAIRAIGO.filter(x=>x.w!==g.w).map(x=>x.m) }));
-  KANYOUKU.forEach(k => pool.push({genre:'kanyouku', q:k.k.replace('□','＿'), sub:'', ans:k.m, key:k.k,
+  KANYOUKU.forEach(k => pool.push({genre:'kanyouku', q:k.k.replace('□','＿'), sub:'', ans:k.m, key:k.k, rowIndex:k.rowIndex,
     decoys: KANYOUKU.filter(x=>x.k!==k.k).map(x=>x.m) }));
-  YOJI.forEach(y => pool.push({genre:'yoji', q:y.i, sub:y.r?`（${y.r}）`:'', ans:y.m, key:y.i,
+  YOJI.forEach(y => pool.push({genre:'yoji', q:y.i, sub:y.r?`（${y.r}）`:'', ans:y.m, key:y.i, rowIndex:y.rowIndex,
     decoys: YOJI.filter(x=>x.i!==y.i).map(x=>x.m) }));
-  SANJIGO.forEach(s => pool.push({genre:'sanjigo', q:s.i, sub:s.r?`（${s.r}）`:'', ans:s.m, key:s.i,
+  SANJIGO.forEach(s => pool.push({genre:'sanjigo', q:s.i, sub:s.r?`（${s.r}）`:'', ans:s.m, key:s.i, rowIndex:s.rowIndex,
     decoys: SANJIGO.filter(x=>x.i!==s.i).map(x=>x.m) }));
 
   shPool = shuffle(pool);
@@ -2014,12 +2105,36 @@ function renderShuffle(){
   });
 }
 
+// 全ジャンル共通：正誤を記録（定着度・最終解答日時・シート送信キュー・今日のカウント）
+function recordResult(item, ok){
+  const map={
+    wago:     {store:S,   lsKey:'wago_srs_v2'},
+    kotowaza: {store:SK,  lsKey:'koto_srs_v1'},
+    gairaigo: {store:SG,  lsKey:'gairaigo_v1'},
+    kanyouku: {store:SKA, lsKey:'kanyouku_v1'},
+    yoji:     {store:SY,  lsKey:'yoji_v1'},
+    sanjigo:  {store:SSJ, lsKey:'sanjigo_v1'},
+  };
+  const m=map[item.genre]; if(!m) return;
+  if(!m.store[item.key]) m.store[item.key]=item.genre==='wago'?{ef:2.5,interval:0,nextDue:null,reps:0,totalOk:0,totalNg:0}:{totalOk:0,totalNg:0};
+  const sc=m.store[item.key];
+  if(ok) sc.totalOk=(sc.totalOk||0)+1;
+  else sc.totalNg=(sc.totalNg||0)+1;
+  sc.last=Date.now(); sc.lastOk=!!ok;
+  localStorage.setItem(m.lsKey, JSON.stringify(m.store));
+  updateQueue.push({type:item.genre, rowIndex:item.rowIndex, correctCount:sc.totalOk, totalCount:sc.totalOk+sc.totalNg});
+  todayCount++; localStorage.setItem('wago_today_count',todayCount); localStorage.setItem('wago_today_date',TODAY);
+  if(ok) addPts(1);
+}
+
 function chkShuffle(sel, item, btn){
   if(shAns) return; shAns=true;
   document.querySelectorAll('#sh-cgrid .ch').forEach(b=>{ b.disabled=true; if(b.textContent===item.ans) b.classList.add('ok'); });
   const ok=sel===item.ans;
   if(!ok) btn.classList.add('ng');
   if(ok){ shOk++; shootStar('✨'); } else { shNg++; }
+  comboHit(ok);
+  recordResult(item, ok);
   updateShuffleScore();
   const fb=document.getElementById('sh-fb');
   fb.className='fb '+(ok?'ok':'ng');
@@ -2036,7 +2151,7 @@ function showShuffleResult(){
   const total=shOk+shNg, pct=total>0?Math.round(shOk/total*100):0;
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'🎲':'💪';
   document.getElementById('rtit').textContent=pct>=80?'完璧！！':pct>=60?'いい調子！':'まだまだ伸びる！';
-  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${shOk}問</strong> ／ ミス <strong style="color:var(--red)">${shNg}問</strong><br>正答率 <strong>${pct}%</strong>`;
+  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${shOk}問</strong> ／ ミス <strong style="color:var(--red)">${shNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(shOk)}`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); goShuffle(); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
@@ -2198,10 +2313,9 @@ function chkSanjigo(sel,correct,btn){
   document.querySelectorAll('#sj-cgrid .ch').forEach(b=>{ b.disabled=true; if(b.textContent===correct)b.classList.add('ok'); });
   const ok=sel===correct; if(!ok) btn.classList.add('ng');
   const s=sjPool[sjIdx];
-  if(!SSJ[s.i]) SSJ[s.i]={totalOk:0,totalNg:0};
-  if(ok){ sjOk++; SSJ[s.i].totalOk++; shootStar('✨'); } else { sjNg++; SSJ[s.i].totalNg++; }
-  localStorage.setItem('sanjigo_v1',JSON.stringify(SSJ)); updateSanjigoScore();
-  updateQueue.push({type:'sanjigo',rowIndex:s.rowIndex,correctCount:SSJ[s.i].totalOk,totalCount:SSJ[s.i].totalOk+SSJ[s.i].totalNg});
+  if(ok){ sjOk++; shootStar('✨'); } else { sjNg++; }
+  comboHit(ok);
+  recordResult({genre:'sanjigo',key:s.i,rowIndex:s.rowIndex},ok); updateSanjigoScore();
   const mastered=isSanjigoMastered(s);
   const fb=document.getElementById('sj-fb'); fb.className='fb '+(ok?'ok':'ng');
   if(ok){
@@ -2223,11 +2337,209 @@ function showSanjigoResult(){
   const total=sjOk+sjNg, pct=total>0?Math.round(sjOk/total*100):0;
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
   document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
-  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${sjOk}問</strong> ／ ミス <strong style="color:var(--red)">${sjNg}問</strong><br>正答率 <strong>${pct}%</strong>`;
+  document.getElementById('rsco').innerHTML=`5分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${sjOk}問</strong> ／ ミス <strong style="color:var(--red)">${sjNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(sjOk)}`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); startSanjigo(); show('s-sanjigo'); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
   flushQueue();
+}
+
+// ── SFX（WebAudio・音声ファイル不要）──
+let AC=null;
+let sfxOn=localStorage.getItem('sfx_on')!=='0';
+function ac(){ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended') AC.resume(); return AC; }
+function tone(freq,dur,type,vol,when,slide){
+  if(!sfxOn) return;
+  try{
+    const a=ac(), o=a.createOscillator(), g=a.createGain();
+    const t=a.currentTime+(when||0);
+    o.type=type||'sine'; o.frequency.setValueAtTime(freq,t);
+    if(slide) o.frequency.exponentialRampToValueAtTime(slide,t+dur);
+    g.gain.setValueAtTime(vol||.15,t);
+    g.gain.exponentialRampToValueAtTime(.001,t+dur);
+    o.connect(g); g.connect(a.destination);
+    o.start(t); o.stop(t+dur+.05);
+  }catch(e){}
+}
+// 正解音：コンボが伸びるほど音程が上がる
+function sfxOk(cmb){ const base=660*Math.pow(1.059,Math.min(cmb||0,12)); tone(base,.12,'sine',.18); tone(base*1.5,.2,'sine',.14,.09); }
+function sfxNg(){ tone(220,.22,'sawtooth',.1); tone(160,.3,'sawtooth',.08,.09); }
+function sfxCombo(){ [523,659,784,1047].forEach((f,i)=>tone(f,.1,'square',.11,i*.07)); }
+function sfxFanfare(){ [523,659,784,1047].forEach((f,i)=>tone(f,.16,'triangle',.15,i*.11)); tone(1319,.5,'triangle',.15,.44); }
+function sfxTick(){ tone(880,.04,'square',.06); }
+function sfxGachaReveal(r){
+  if(r==='UR'||r==='SSR') sfxFanfare();
+  else if(r==='SR') sfxCombo();
+  else { tone(784,.12,'sine',.15); tone(1175,.2,'sine',.13,.1); }
+}
+function toggleSfx(){
+  sfxOn=!sfxOn;
+  localStorage.setItem('sfx_on',sfxOn?'1':'0');
+  document.getElementById('sfx-toggle').textContent=sfxOn?'🔊':'🔇';
+  if(sfxOn) sfxOk(0);
+}
+document.getElementById('sfx-toggle').textContent=sfxOn?'🔊':'🔇';
+
+// ── COMBO ──
+let combo=0;
+function comboHit(ok){
+  if(ok){
+    combo++;
+    sfxOk(combo);
+    if(combo>=2) showComboFx(combo);
+    if(combo%5===0){ addPts(3); sfxCombo(); showToast(`🔥 ${combo}コンボ達成！ボーナス +3pt`); }
+  } else {
+    if(combo>=5) showToast(`💔 ${combo}コンボが途切れた…`);
+    combo=0;
+    sfxNg();
+  }
+}
+function showComboFx(n){
+  let el=document.getElementById('combo-fx');
+  if(!el){ el=document.createElement('div'); el.id='combo-fx'; document.body.appendChild(el); }
+  el.className='combo-fx'+(n>=20?' c20':n>=10?' c10':n>=5?' c5':'');
+  el.textContent=`🔥 ${n} COMBO!`;
+  el.style.animation='none'; void el.offsetWidth; el.style.animation='';
+  clearTimeout(el._t); el._t=setTimeout(()=>{ el.className='combo-fx off'; },950);
+}
+
+// ── GACHA ──
+const GACHA_COST=20;
+const RARITY={
+  N:  {w:58, c:'#9aa5b1', label:'ノーマル'},
+  R:  {w:27, c:'#3a7bd5', label:'レア'},
+  SR: {w:10, c:'#7c5cbf', label:'スーパーレア'},
+  SSR:{w:4,  c:'#f5a623', label:'ちょうレア'},
+  UR: {w:1,  c:'#e0529c', label:'でんせつ'},
+};
+const GACHA_ITEMS=[
+  {id:'ur1', e:'🐉', n:'ゴイリュウおう', r:'UR'},
+  {id:'ssr1',e:'🦄', n:'コトバニコーン', r:'SSR'},
+  {id:'ssr2',e:'🐯', n:'シジュクタイガー', r:'SSR'},
+  {id:'ssr3',e:'🦅', n:'ジュクゴイーグル', r:'SSR'},
+  {id:'sr1', e:'🦁', n:'ガクシャライオン', r:'SR'},
+  {id:'sr2', e:'🐺', n:'ヨジウルフ', r:'SR'},
+  {id:'sr3', e:'🦊', n:'コトワザギツネ', r:'SR'},
+  {id:'sr4', e:'🐲', n:'カンヨウドラゴン', r:'SR'},
+  {id:'sr5', e:'🦉', n:'モノシリフクロウ', r:'SR'},
+  {id:'sr6', e:'🐳', n:'ゴイクジラ', r:'SR'},
+  {id:'sr7', e:'🦚', n:'ハデコトバクジャク', r:'SR'},
+  {id:'sr8', e:'🐘', n:'オボエゾウ', r:'SR'},
+  {id:'r01', e:'🐢', n:'コツコツガメ', r:'R'},
+  {id:'r02', e:'🐇', n:'ハヤトチリウサギ', r:'R'},
+  {id:'r03', e:'🐝', n:'ベンキョウバチ', r:'R'},
+  {id:'r04', e:'🐧', n:'レイブンペンギン', r:'R'},
+  {id:'r05', e:'🦆', n:'ガイライガモ', r:'R'},
+  {id:'r06', e:'🐙', n:'ヒッパリダコ', r:'R'},
+  {id:'r07', e:'🦀', n:'ヨコミチガニ', r:'R'},
+  {id:'r08', e:'🐴', n:'ウマイコトウマ', r:'R'},
+  {id:'r09', e:'🦜', n:'マネッコインコ', r:'R'},
+  {id:'r10', e:'🐿️', n:'アンキリス', r:'R'},
+  {id:'r11', e:'🐬', n:'スイスイイルカ', r:'R'},
+  {id:'r12', e:'🦔', n:'チクチクハリー', r:'R'},
+  {id:'n01', e:'🐛', n:'ホンノムシ', r:'N'},
+  {id:'n02', e:'🐌', n:'ノンビリマイマイ', r:'N'},
+  {id:'n03', e:'🐜', n:'コツコツアリ', r:'N'},
+  {id:'n04', e:'🐤', n:'ヒヨッコトバ', r:'N'},
+  {id:'n05', e:'🐟', n:'サカナヘンくん', r:'N'},
+  {id:'n06', e:'🐸', n:'カエルノコ', r:'N'},
+  {id:'n07', e:'🐭', n:'チュウガクチュウ', r:'N'},
+  {id:'n08', e:'🐮', n:'モーオボエタウシ', r:'N'},
+  {id:'n09', e:'🐔', n:'サンポデワトリ', r:'N'},
+  {id:'n10', e:'🐑', n:'ヒツジュクゴ', r:'N'},
+  {id:'n11', e:'🐷', n:'トントンビョーシ', r:'N'},
+  {id:'n12', e:'🐶', n:'ワンダフルイヌ', r:'N'},
+  {id:'n13', e:'🐱', n:'ネコノテかしたい', r:'N'},
+  {id:'n14', e:'🦎', n:'トカゲノシッポ', r:'N'},
+  {id:'n15', e:'🐞', n:'テントウテスト', r:'N'},
+  {id:'n16', e:'🍄', n:'キノコトバ', r:'N'},
+  {id:'n17', e:'🌱', n:'メバエちゃん', r:'N'},
+  {id:'n18', e:'🐚', n:'カイワイガイ', r:'N'},
+  {id:'n19', e:'🪨', n:'イシノウエニモ', r:'N'},
+  {id:'n20', e:'🦐', n:'エビでタイつり', r:'N'},
+];
+let GA={pts:0, owned:{}, seeded:false};
+function loadGacha(){ try{ GA=Object.assign({pts:0,owned:{},seeded:false}, JSON.parse(localStorage.getItem('gacha_v1')||'{}')); }catch(e){} }
+function saveGacha(){ localStorage.setItem('gacha_v1', JSON.stringify(GA)); }
+function addPts(n){ GA.pts+=n; saveGacha(); const b=document.getElementById('gacha-badge'); if(b) b.textContent=GA.pts+'pt'; }
+// 初回のみ：これまでの累計正解数をポイントに変換（上限200pt）
+function seedGachaPts(){
+  if(GA.seeded) return;
+  let total=0;
+  Object.values(S).forEach(v=>{ total+=v.totalOk||0; });
+  ['koto_srs_v1','gairaigo_v1','kanyouku_v1','yoji_v1','sanjigo_v1'].forEach(k=>{
+    try{ const o=JSON.parse(localStorage.getItem(k)||'{}'); Object.values(o).forEach(v=>{ total+=v.totalOk||0; }); }catch(e){}
+  });
+  const bonus=Math.min(total,200);
+  GA.pts+=bonus; GA.seeded=true; saveGacha();
+  if(bonus>0) setTimeout(()=>showToast(`🎁 今までのがんばりボーナス +${bonus}pt！`), 800);
+}
+// セッション完走ボーナス（結果画面用の表示HTMLを返す）
+function resultPtsLine(okCount){
+  addPts(10);
+  combo=0;
+  sfxFanfare();
+  return `<br>🎁 ガチャpt <strong style="color:#e0529c">+${okCount+10}</strong>（合計 ${GA.pts}pt）`;
+}
+function goGacha(){
+  document.getElementById('gacha-capsule').style.display='block';
+  document.getElementById('gacha-reveal').style.display='none';
+  updateGachaUI(); renderCollection();
+  show('s-gacha');
+}
+function updateGachaUI(){
+  document.getElementById('gacha-pts-pill').textContent=GA.pts+'pt';
+  const btn=document.getElementById('gacha-roll-btn');
+  btn.classList.toggle('off', GA.pts<GACHA_COST);
+  btn.textContent=GA.pts<GACHA_COST?`あと${GACHA_COST-GA.pts}pt でガチャが回せる！`:`ガチャを回す！（${GACHA_COST}pt）`;
+  const owned=GACHA_ITEMS.filter(i=>GA.owned[i.id]).length;
+  document.getElementById('coll-count').textContent=`${owned}/${GACHA_ITEMS.length}`;
+  const b=document.getElementById('gacha-badge'); if(b) b.textContent=GA.pts+'pt';
+}
+function drawGachaItem(){
+  const total=Object.values(RARITY).reduce((a,r)=>a+r.w,0);
+  let roll=Math.random()*total, rar='N';
+  for(const [k,v] of Object.entries(RARITY)){ roll-=v.w; if(roll<0){ rar=k; break; } }
+  const pool=GACHA_ITEMS.filter(i=>i.r===rar);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+let gachaRolling=false;
+function rollGacha(){
+  if(gachaRolling) return;
+  if(GA.pts<GACHA_COST){ showToast('ポイントが足りないよ！クイズで貯めよう'); return; }
+  gachaRolling=true;
+  GA.pts-=GACHA_COST; saveGacha(); updateGachaUI();
+  const cap=document.getElementById('gacha-capsule');
+  const rev=document.getElementById('gacha-reveal');
+  rev.style.display='none'; cap.style.display='block';
+  cap.style.animation='gshake .13s 8';
+  for(let i=0;i<8;i++) setTimeout(sfxTick, i*130);
+  setTimeout(()=>{
+    cap.style.animation=''; cap.style.display='none';
+    const item=drawGachaItem();
+    const isNewItem=!GA.owned[item.id];
+    GA.owned[item.id]=(GA.owned[item.id]||0)+1; saveGacha();
+    const ri=RARITY[item.r];
+    rev.innerHTML=`<div class="ge">${item.e}</div><div class="gn">${item.n}</div><div class="gr" style="background:${ri.c}">${'★'.repeat({N:1,R:2,SR:3,SSR:4,UR:5}[item.r])} ${ri.label}</div><div class="gnew">${isNewItem?'✨ NEW！ずかんに登録！':`${GA.owned[item.id]}体目ゲット`}</div>`;
+    rev.style.display='block';
+    sfxGachaReveal(item.r);
+    const stars={SR:3,SSR:6,UR:10}[item.r]||0;
+    for(let i=0;i<stars;i++) setTimeout(()=>shootStar(item.r==='UR'?'🌈':['🎉','⭐','🌟'][i%3]), i*150);
+    renderCollection(); updateGachaUI();
+    gachaRolling=false;
+  },1100);
+}
+function renderCollection(){
+  const order={UR:0,SSR:1,SR:2,R:3,N:4};
+  const g=document.getElementById('coll-grid'); g.innerHTML='';
+  [...GACHA_ITEMS].sort((a,b)=>order[a.r]-order[b.r]).forEach(item=>{
+    const cnt=GA.owned[item.id]||0;
+    const ri=RARITY[item.r];
+    const d=document.createElement('div');
+    d.className='coll-item'+(cnt?'':' locked');
+    d.innerHTML=`<div class="ce">${cnt?item.e:'❓'}</div><div class="cn">${cnt?item.n:'？？？'}</div><div class="cr" style="background:${cnt?ri.c:'#bbb'}">${item.r}</div>${cnt>1?`<div class="cd">×${cnt}</div>`:''}`;
+    g.appendChild(d);
+  });
 }
 
 // ── FX ──
@@ -2282,23 +2594,17 @@ function revealYojiAnswer(){
 // 書き取り：自己採点
 function judgeYoji(correct){
   const y=yojiPool[yojiIdx];
-  if(!SY[y.i]) SY[y.i]={totalOk:0,totalNg:0};
-  
-  if(correct){ 
-    yojiOk++; 
-    SY[y.i].totalOk++; 
-    shootStar('⭐'); 
+  if(correct){
+    yojiOk++;
+    shootStar('⭐');
     showToast('⭐ できた！');
-  } else { 
-    yojiNg++; 
-    SY[y.i].totalNg++; 
+  } else {
+    yojiNg++;
     showToast('😓 次はがんばろう！');
   }
-  
-  localStorage.setItem('yoji_v1',JSON.stringify(SY)); 
+  comboHit(correct);
+  recordResult({genre:'yoji',key:y.i,rowIndex:y.rowIndex},correct);
   updateYojiScore();
-  updateQueue.push({type:'yoji',rowIndex:y.rowIndex,correctCount:SY[y.i].totalOk,totalCount:SY[y.i].totalOk+SY[y.i].totalNg});
-  
   setTimeout(()=>{ yojiIdx++; renderYoji(); }, 800);
 }
 </script>
