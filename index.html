@@ -831,6 +831,7 @@ let streak = 0, lastDate = '', todayCount = 0, todayDate = '';
 let updateQueue = [];
 
 async function init() {
+  loadGacha(); // fetch失敗時でも保存済みポイントを先に読み込む（0上書き防止）
   document.getElementById('loading-overlay').classList.remove('hidden');
   try {
     const res = await fetch(`${SHEET_URL}?type=wago`);
@@ -857,7 +858,7 @@ async function init() {
       if (todayDate !== TODAY) { todayCount=0; todayDate=TODAY; localStorage.setItem('wago_today_date',TODAY); localStorage.setItem('wago_today_count','0'); }
       lastDate=TODAY; localStorage.setItem('wago_lastdate',TODAY); localStorage.setItem('wago_streak',streak);
     }
-    saveS(); loadGacha(); seedGachaPts(); setupListFilters(); updateHome();
+    saveS(); seedGachaPts(); setupListFilters(); updateHome();
   } catch(e) { showToast('⚠️ データの読み込みに失敗しました'); console.error(e); }
   document.getElementById('loading-overlay').classList.add('hidden');
 }
@@ -886,13 +887,19 @@ function sm2Update(w, rating){
 }
 function saveS(){ localStorage.setItem('wago_srs_v2', JSON.stringify(S)); }
 function shuffle(a){ return [...a].sort(()=>Math.random()-.5); }
+function escReg(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); } // 正規表現メタ文字をエスケープ
 async function flushQueue() {
   if(updateQueue.length === 0) return;
   const queue = [...updateQueue]; updateQueue = [];
   document.getElementById('saving-bar').classList.add('on');
   try {
     await fetch(SHEET_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(queue), mode:'no-cors' });
-  } catch(e) { console.error('保存エラー', e); }
+  } catch(e) {
+    // 送信失敗：キューに戻して次回の flushQueue で再送する
+    updateQueue.unshift(...queue);
+    console.error('保存エラー', e);
+    showToast('⚠️ 保存に失敗（次回に再送します）');
+  }
   setTimeout(()=>document.getElementById('saving-bar').classList.remove('on'), 1200);
 }
 
@@ -1077,11 +1084,11 @@ function renderQ(){
 }
 function maskWord(ex,word){
   const blanks='＿＿';
-  if(ex.includes(word)) return ex.replace(new RegExp(word,'g'),blanks);
+  if(ex.includes(word)) return ex.replace(new RegExp(escReg(word),'g'),blanks);
   for(let cut=1;cut<=Math.min(3,word.length-2);cut++){
     const stem=word.slice(0,word.length-cut);
-    const re=new RegExp(stem+'[ぁ-ん]*','g');
-    if(re.test(ex)) return ex.replace(new RegExp(stem+'[ぁ-ん]*','g'),blanks);
+    const re=new RegExp(escReg(stem)+'[ぁ-ん]*','g');
+    if(re.test(ex)) return ex.replace(new RegExp(escReg(stem)+'[ぁ-ん]*','g'),blanks);
   }
   return ex;
 }
@@ -1573,7 +1580,7 @@ function renderGairaigo(){
   document.getElementById('gairaigo-fb').style.display='none'; document.getElementById('gairaigo-nxtbtn').style.display='none';
   document.getElementById('gairaigo-prog').style.width=`${(gIdx/gPool.length)*100}%`;
   if(gMode==='ex'){
-    const masked=g.ex.replace(new RegExp(g.w,'g'),'（　　）');
+    const masked=g.ex.replace(new RegExp(escReg(g.w),'g'),'（　　）');
     document.getElementById('gairaigo-qlbl').textContent='（　　）に入る外来語はどれ？';
     document.getElementById('gairaigo-qtxt').textContent=masked;
     document.getElementById('gairaigo-qsub').textContent='';
