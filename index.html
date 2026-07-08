@@ -62,6 +62,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 .m-kanyouku{background:linear-gradient(135deg,#6a1a6e,#c05adb);}
 .m-yojijukugo{background:linear-gradient(135deg,#c0392b,#e74c3c);}
 .m-sanjigo{background:linear-gradient(135deg,#d4380d,#fa8c16);}
+.m-taigi{background:linear-gradient(135deg,#3f51b5,#5c6bc0);}
 .mode-select{width:100%;max-width:400px;margin-top:12px;}
 .mode-select-title{font-family:'Kaisei Decol',serif;font-size:1.1rem;font-weight:700;text-align:center;margin-bottom:16px;color:var(--deep);}
 .msbtn{width:100%;padding:20px 22px;border:none;border-radius:18px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;gap:14px;box-shadow:var(--sh2);transition:transform .15s;text-align:left;color:white;}
@@ -301,6 +302,12 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
     <span class="badge" id="sanjigo-badge">0問</span>
     <span class="ma">›</span>
   </button>
+  <button class="mbtn m-taigi" onclick="goTaigi()">
+    <span class="mi">↔️</span>
+    <div class="mt"><div>対義語・類義語</div><div style="font-size:.72rem;opacity:.8;font-weight:400">似た意味・反対の意味を4択で特訓</div></div>
+    <span class="badge" id="taigi-badge">0問</span>
+    <span class="ma">›</span>
+  </button>
   <div class="stat-grid" style="margin-top:10px">
     <div class="stat-c c-grn"><span class="stat-n" id="h-learned">0</span><div class="stat-l">⭐習得</div></div>
     <div class="stat-c c-sun"><span class="stat-n" id="h-review">0</span><div class="stat-l">📅復習中</div></div>
@@ -386,6 +393,11 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
       <div class="mst"><div>例文→和語</div><div class="mss">＿＿の入った例文から語句を4択で選ぶ</div></div>
       <span style="font-size:1.1rem;opacity:.5">›</span>
     </button>
+    <button id="qm-mword" class="msbtn ms-mean" onclick="selectQuizType('mword')">
+      <span class="msi">💡</span>
+      <div class="mst"><div>意味→和語</div><div class="mss">意味を見て語句を4択で選ぶ</div></div>
+      <span style="font-size:1.1rem;opacity:.5">›</span>
+    </button>
     <button id="quiz-start-btn" class="msbtn" style="background:linear-gradient(135deg,#aaa,#ccc);margin-top:8px;justify-content:center;pointer-events:none" onclick="startQuizMode()">
       <span class="msi">▶️</span>
       <div class="mst"><div>スタート！</div><div class="mss" id="quiz-start-sub">レベルとモードを選んでください</div></div>
@@ -450,6 +462,8 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
   <div class="hist-bars" id="hist-bars-yoji"></div>
   <div class="hist-title">📝 三字の熟語 レベル別正答率</div>
   <div class="hist-bars" id="hist-bars-sanjigo"></div>
+  <div class="hist-title">↔️ 対義語・類義語 レベル別正答率</div>
+  <div class="hist-bars" id="hist-bars-taigi"></div>
 
 </div>
 
@@ -474,6 +488,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
     <button class="flbtn" onclick="setListCat('kanyouku',this)">✋ 慣用句</button>
     <button class="flbtn" onclick="setListCat('yoji',this)">🈶 四字熟語</button>
     <button class="flbtn" onclick="setListCat('sanjigo',this)">📝 三字熟語</button>
+    <button class="flbtn" onclick="setListCat('taigi',this)">↔️ 対義語・類義語</button>
   </div>
   <!-- レベルフィルター -->
   <div class="flrow" id="flrow"></div>
@@ -559,6 +574,11 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
     <button class="msbtn ms-rev" onclick="startGairaigoMode('mean')">
       <span class="msi">🔁</span>
       <div class="mst"><div>外来語→意味</div><div class="mss">外来語を見て意味を6択で選ぶ</div></div>
+      <span style="font-size:1.1rem;opacity:.5">›</span>
+    </button>
+    <button class="msbtn ms-choice" onclick="startGairaigoMode('mword')">
+      <span class="msi">💡</span>
+      <div class="mst"><div>意味→外来語</div><div class="mss">意味を見て外来語を4択で選ぶ</div></div>
       <span style="font-size:1.1rem;opacity:.5">›</span>
     </button>
   </div>
@@ -795,6 +815,46 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
   <button class="nxtbtn" id="sj-nxtbtn" onclick="nextSanjigo()">つぎの問題 →</button>
 </div>
 
+<!-- ═══ TAIGIRUIGI LEVEL SELECT ═══ -->
+<div class="scr" id="s-taigi-level">
+  <div class="hdr"><button class="bk" onclick="goHome()">←</button><div class="htitle">↔️ 対義語・類義語</div></div>
+  <div class="mode-select">
+    <div class="mode-select-title">レベルを選んでね</div>
+    <div id="taigi-lv-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-bottom:20px"></div>
+    <button class="msbtn m-taigi" style="justify-content:center" onclick="confirmTaigiLevel()">
+      <span class="msi">✓</span>
+      <div class="mst"><div>この範囲で練習する</div><div class="mss" id="taigi-lv-sub">すべてのレベルからランダム</div></div>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ TAIGIRUIGI ═══ -->
+<div class="scr" id="s-taigi">
+  <div class="hdr"><button class="bk" onclick="quitTaigi()">←</button><div class="htitle">↔️ 対義語・類義語</div><div class="hpill" id="taigi-timer" style="background:linear-gradient(135deg,#3f51b5,#5c6bc0);color:white;font-size:1rem;padding:6px 16px">3:00</div></div>
+  <div class="pbar"><div class="pfill" id="taigi-prog"></div></div>
+  <div style="display:flex;gap:8px;width:100%;max-width:460px;margin-bottom:10px">
+    <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
+      <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--grn)" id="taigi-ok">0</div>
+      <div style="font-size:.62rem;font-weight:800;color:#aaa">⭐ 正解</div>
+    </div>
+    <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
+      <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--red)" id="taigi-ng">0</div>
+      <div style="font-size:.62rem;font-weight:800;color:#aaa">😓 ミス</div>
+    </div>
+    <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
+      <div style="font-family:'Kaisei Decol',serif;font-size:1.4rem;font-weight:700;color:var(--pur)" id="taigi-total">0</div>
+      <div style="font-size:.62rem;font-weight:800;color:#aaa">📝 合計</div>
+    </div>
+  </div>
+  <div class="qbox">
+    <div class="qlbl" id="taigi-qlbl">問題</div>
+    <div class="qtxt" id="taigi-qtxt">—</div>
+    <div class="qsub" id="taigi-qsub"></div>
+  </div>
+  <div class="cgrid" id="taigi-cgrid"></div>
+  <div class="fb" id="taigi-fb"></div>
+  <button class="nxtbtn" id="taigi-nxtbtn" onclick="nextTaigi()">つぎの問題 →</button>
+</div>
 
 <!-- ═══ GACHA ═══ -->
 <div class="scr" id="s-gacha">
@@ -906,7 +966,7 @@ async function flushQueue() {
 // 全ジャンルのlocalStorageから「一度でも解いた問題」の数を数える（未ロードのジャンルも含む）
 function countRecentSolved(){
   let n=0;
-  ['wago_srs_v2','koto_srs_v1','gairaigo_v1','kanyouku_v1','yoji_v1','sanjigo_v1'].forEach(k=>{
+  ['wago_srs_v2','koto_srs_v1','gairaigo_v1','kanyouku_v1','yoji_v1','sanjigo_v1','taigi_v1'].forEach(k=>{
     try{ const o=JSON.parse(localStorage.getItem(k)||'{}'); Object.values(o).forEach(v=>{ if(v&&v.last) n++; }); }catch(e){}
   });
   return n;
@@ -1024,7 +1084,7 @@ function buildQuizLvButtons(){
 function goQuiz(){
   qLvSelected=false; qTypeSelected=false; quizLvFilter='all';
   buildQuizLvButtons();
-  ['qm-reverse','qm-ex'].forEach(id=>{ document.getElementById(id).style.opacity='1'; document.getElementById(id).style.outline='none'; });
+  ['qm-reverse','qm-ex','qm-mword'].forEach(id=>{ document.getElementById(id).style.opacity='1'; document.getElementById(id).style.outline='none'; });
   const btn=document.getElementById('quiz-start-btn');
   btn.style.background='linear-gradient(135deg,#aaa,#ccc)'; btn.style.pointerEvents='none';
   document.getElementById('quiz-start-sub').textContent='レベルとモードを選んでください';
@@ -1032,26 +1092,27 @@ function goQuiz(){
 }
 function selectQuizType(type){
   qType=type; qTypeSelected=true;
-  ['qm-reverse','qm-ex'].forEach(id=>{ document.getElementById(id).style.outline='none'; document.getElementById(id).style.opacity='0.5'; });
+  ['qm-reverse','qm-ex','qm-mword'].forEach(id=>{ document.getElementById(id).style.outline='none'; document.getElementById(id).style.opacity='0.5'; });
   document.getElementById('qm-'+type).style.opacity='1'; document.getElementById('qm-'+type).style.outline='3px solid white';
   updateQuizStartBtn();
 }
+function qModeLabel(t){ return {reverse:'和語→意味', ex:'例文→和語', mword:'意味→和語'}[t]||t; }
 function updateQuizStartBtn(){
   const btn=document.getElementById('quiz-start-btn');
   if(qLvSelected && qTypeSelected){
     btn.style.background='linear-gradient(135deg,#f5a623,#f7c05a)'; btn.style.pointerEvents='auto';
     const lvLabel=quizLvFilter==='all'?'全レベル':`Lv.${quizLvFilter}`;
-    document.getElementById('quiz-start-sub').textContent=`${lvLabel} ／ ${qType==='reverse'?'和語→意味':'例文→和語'}`;
+    document.getElementById('quiz-start-sub').textContent=`${lvLabel} ／ ${qModeLabel(qType)}`;
   }
 }
 function startQuizMode(){
   const pool=quizLvFilter==='all'?WORDS.filter(w=>w.lv):WORDS.filter(w=>w.lv===quizLvFilter);
   if(pool.length<4){ showToast(`${quizLvFilter==='all'?'':quizLvFilter+'レベルの'}語句が少なすぎます`); return; }
   const filtered=qType==='ex'?pool.filter(w=>w.ex&&w.ex.trim()!==''):pool;
-  if(filtered.length<4){ showToast('例文のある語句が少なすぎます'); return; }
+  if(filtered.length<4){ showToast(qType==='ex'?'例文のある語句が少なすぎます':'語句が少なすぎます'); return; }
   qPool=shuffle([...filtered,...filtered,...filtered]);
   qIdx=0; qOk=0; qNg=0; qTimerSec=180;
-  document.getElementById('q-title').textContent=`⏱ ${quizLvFilter==='all'?'全レベル':'Lv.'+quizLvFilter} ${qType==='reverse'?'和語→意味':'例文→和語'}`;
+  document.getElementById('q-title').textContent=`⏱ ${quizLvFilter==='all'?'全レベル':'Lv.'+quizLvFilter} ${qModeLabel(qType)}`;
   const timerEl=document.getElementById('q-timer');
   timerEl.style.background='linear-gradient(135deg,#f5a623,#f7c05a)';
   updateTimerDisplay(); updateScoreDisplay(); renderQ(); show('s-quiz');
@@ -1075,12 +1136,19 @@ function renderQ(){
     document.getElementById('qtxt').textContent=w.w+(w.r?`（${w.r}）`:'');
     document.getElementById('qsub').textContent='';
     renderChoices(mkChoices(w,'m'),w.m);
+  } else if(qType==='mword'){
+    document.getElementById('qlbl').textContent='この意味の語句はどれ？';
+    document.getElementById('qtxt').textContent=w.m;
+    document.getElementById('qtxt').style.fontSize='1.3rem';
+    document.getElementById('qsub').textContent='';
+    renderChoices(mkChoices(w,'w'),w.w);
   } else {
     document.getElementById('qlbl').textContent='＿＿に入る語句はどれ？';
     document.getElementById('qtxt').textContent=maskWord(w.ex,w.w);
     document.getElementById('qsub').textContent=`意味：${w.m}`;
     renderChoices(mkChoices(w,'w'),w.w);
   }
+  if(qType!=='mword') document.getElementById('qtxt').style.fontSize='';
 }
 function maskWord(ex,word){
   const blanks='＿＿';
@@ -1110,6 +1178,7 @@ function chkChoice(sel,correct,btn){
   fb.className='fb '+(ok?'ok':'ng');
   fb.innerHTML=(ok?'⭐ 正解！すばらしい！':`😓 正解は「${correct}」だよ`);
   if(qType==='ex') fb.innerHTML+=`<div style="margin-top:5px;font-size:.8rem;font-weight:400">${w.m}</div>`;
+  else if(qType==='mword') fb.innerHTML+=`<div style="margin-top:5px;font-size:.8rem;font-weight:400">${w.w}${w.r?`（${w.r}）`:''}${w.ex?`　例：${w.ex}`:''}</div>`;
   else if(w.ex) fb.innerHTML+=`<div style="margin-top:5px;font-size:.8rem;font-weight:400">例：${w.ex}</div>`;
   fb.style.display='block';
   if(ok){ setTimeout(()=>nextQ(),500); } else { document.getElementById('nxtbtn').style.display='block'; }
@@ -1162,6 +1231,7 @@ async function goStats(){
     KANYOUKU.length?Promise.resolve():loadKanyouku(),
     YOJI.length?Promise.resolve():loadYoji(),
     SANJIGO.length?Promise.resolve():loadSanjigo(),
+    TAIGI.length?Promise.resolve():loadTaigi(),
   ]);
 
   // 総合正答率（全カテゴリ合算）
@@ -1172,6 +1242,7 @@ async function goStats(){
   KANYOUKU.forEach(k=>{ const sc=SKA[k.k]; if(sc){totalOk+=sc.totalOk||0; totalNg+=sc.totalNg||0;} });
   YOJI.forEach(y=>{ const sc=SY[y.i]; if(sc){totalOk+=sc.totalOk||0; totalNg+=sc.totalNg||0;} });
   SANJIGO.forEach(s=>{ const sc=SSJ[s.i]; if(sc){totalOk+=sc.totalOk||0; totalNg+=sc.totalNg||0;} });
+  TAIGI.forEach(t=>{ const sc=STG[taigiKey(t)]; if(sc){totalOk+=sc.totalOk||0; totalNg+=sc.totalNg||0;} });
   const pct=totalOk+totalNg>0?Math.round(totalOk/(totalOk+totalNg)*100):null;
 
   document.getElementById('acc-ok').textContent=totalOk;
@@ -1211,6 +1282,10 @@ async function goStats(){
   document.getElementById('hist-bars-sanjigo').innerHTML=calcBarHtml(
     SANJIGO, s=>{ const sc=SSJ[s.i]||{totalOk:0,totalNg:0}; return {ok:sc.totalOk||0, ng:sc.totalNg||0}; }
   );
+  // 対義語・類義語 レベル別
+  document.getElementById('hist-bars-taigi').innerHTML=calcBarHtml(
+    TAIGI, t=>{ const sc=STG[taigiKey(t)]||{totalOk:0,totalNg:0}; return {ok:sc.totalOk||0, ng:sc.totalNg||0}; }
+  );
 
 
   show('s-stats');
@@ -1230,6 +1305,7 @@ function setListCat(cat, el){
     cat==='kanyouku' ? (KANYOUKU.length?Promise.resolve():loadKanyouku()) :
     cat==='yoji'     ? (YOJI.length?Promise.resolve():loadYoji()) :
     cat==='sanjigo'  ? (SANJIGO.length?Promise.resolve():loadSanjigo()) :
+    cat==='taigi'    ? (TAIGI.length?Promise.resolve():loadTaigi()) :
     Promise.resolve();
   loadPromise.then(()=>{ setupListFilters(); renderList(); });
 }
@@ -1353,6 +1429,25 @@ function renderList(){
       d.innerHTML=`<div class="wi">${icon}</div><div style="flex:1;min-width:0"><div class="ww">${s.i}</div><div class="wr">${s.r||''}</div><div class="wm">${s.m}</div>${s.u?`<div style="font-size:.72rem;color:#999;margin-top:2px">例：${s.u}</div>`:''}<div class="wtags"><span class="tag tl">Lv.${s.lv}</span>${pct!=null?`<span class="tag ts">正答${pct}%</span>`:''}${mastered?'<span class="tag" style="background:var(--grn-l);color:var(--grn)">✓ 習得済み</span>':''}</div></div>`;
       el.appendChild(d);
     });
+
+  } else if(listCat==='taigi'){
+    const filtered=TAIGI.filter(t=>(!q||t.k1.includes(q)||t.k2.includes(q)||t.m.includes(q))&&(listLv==='all'||t.lv===listLv))
+      .sort((a,b)=>{
+        const sa=STG[taigiKey(a)]||{totalOk:0,totalNg:0}, sb=STG[taigiKey(b)]||{totalOk:0,totalNg:0};
+        const ta=sa.totalOk+sa.totalNg, tb=sb.totalOk+sb.totalNg;
+        const pa=ta>0?sa.totalOk/ta:0.5, pb=tb>0?sb.totalOk/tb:0.5;
+        return pa-pb;
+      });
+    document.getElementById('list-pill').textContent=filtered.length+'問';
+    filtered.forEach(t=>{
+      const sc=STG[taigiKey(t)]||{totalOk:0,totalNg:0}; const tot=sc.totalOk+sc.totalNg; const pct=tot>0?Math.round(sc.totalOk/tot*100):null;
+      const icon=pct!=null&&pct>=80?'⭐':tot>0&&(pct||0)<50?'🔥':'↔️';
+      const sym=isRuigi(t)?'≒':'⇔';
+      const grpTag=isRuigi(t)?'<span class="tag" style="background:var(--teal-l);color:var(--teal)">類義語</span>':'<span class="tag" style="background:var(--sun-l);color:#b87000">対義語</span>';
+      const d=document.createElement('div'); d.className='wcard';
+      d.innerHTML=`<div class="wi">${icon}</div><div style="flex:1;min-width:0"><div class="ww">${t.k1} <span style="color:var(--pur)">${sym}</span> ${t.k2}</div>${t.m?`<div class="wm">${t.m}</div>`:''}<div class="wtags">${grpTag}<span class="tag tl">Lv.${t.lv}</span>${pct!=null?`<span class="tag ts">正答${pct}%</span>`:''}</div></div>`;
+      el.appendChild(d);
+    });
   }
 
   if(el.innerHTML===''){
@@ -1368,6 +1463,7 @@ function setupListFilters(){
     kanyouku: KANYOUKU,
     yoji:     YOJI,
     sanjigo:  SANJIGO,
+    taigi:    TAIGI,
   };
   const dataset=dataMap[listCat]||[];
   const keyFn=listCat==='wago'?x=>x.lv:listCat==='kotowaza'||listCat==='kanyouku'?x=>x.lv:x=>x.lv;
@@ -1558,7 +1654,8 @@ function startGairaigoMode(mode){
   gMode=mode;
   let base=gairaigoLvFilter==='all'?GAIRAIGO:GAIRAIGO.filter(g=>g.lv===gairaigoLvFilter);
   const pool=gMode==='ex'?base.filter(g=>g.ex&&g.ex.trim()!==''):base;
-  if(pool.length<6){ showToast(`${gairaigoLvFilter==='all'?'':gairaigoLvFilter+'レベルの'}データが少なすぎます`); return; }
+  const gMin=gMode==='mword'?4:6;
+  if(pool.length<gMin){ showToast(`${gairaigoLvFilter==='all'?'':gairaigoLvFilter+'レベルの'}データが少なすぎます`); return; }
   gPool=shuffle([...pool,...pool,...pool]);
   gIdx=0; gOk=0; gNg=0; gTimerSec=180;
   updateGairaigoScore();
@@ -1584,15 +1681,20 @@ function renderGairaigo(){
     document.getElementById('gairaigo-qlbl').textContent='（　　）に入る外来語はどれ？';
     document.getElementById('gairaigo-qtxt').textContent=masked;
     document.getElementById('gairaigo-qsub').textContent='';
-    renderGairaigoChoices(makeGairaigoChoices(g,'w'),g.w);
+    renderGairaigoChoices(makeGairaigoChoices(g,'w',6),g.w);
+  } else if(gMode==='mword'){
+    document.getElementById('gairaigo-qlbl').textContent='この意味の外来語はどれ？';
+    document.getElementById('gairaigo-qtxt').textContent=g.m;
+    document.getElementById('gairaigo-qsub').textContent='';
+    renderGairaigoChoices(makeGairaigoChoices(g,'w',4),g.w);
   } else {
     document.getElementById('gairaigo-qlbl').textContent='この外来語の意味はどれ？';
     document.getElementById('gairaigo-qtxt').textContent=g.w;
     document.getElementById('gairaigo-qsub').textContent=g.r?`（${g.r}）`:'';
-    renderGairaigoChoices(makeGairaigoChoices(g,'m'),g.m);
+    renderGairaigoChoices(makeGairaigoChoices(g,'m',6),g.m);
   }
 }
-function makeGairaigoChoices(g,key){ const sameLv=GAIRAIGO.filter(x=>x[key]!==g[key]&&x.lv===g.lv); const others=GAIRAIGO.filter(x=>x[key]!==g[key]&&x.lv!==g.lv); return shuffle([g[key],...shuffle([...sameLv,...others]).slice(0,5).map(x=>x[key])]); }
+function makeGairaigoChoices(g,key,n){ n=n||6; const sameLv=GAIRAIGO.filter(x=>x[key]!==g[key]&&x.lv===g.lv); const others=GAIRAIGO.filter(x=>x[key]!==g[key]&&x.lv!==g.lv); return shuffle([g[key],...shuffle([...sameLv,...others]).slice(0,n-1).map(x=>x[key])]); }
 function renderGairaigoChoices(choices,correct){ const g2=document.getElementById('gairaigo-cgrid'); g2.innerHTML=''; choices.forEach(c=>{ const b=document.createElement('button'); b.className='ch'; b.style.fontSize=gMode==='mean'?'.78rem':'.88rem'; b.textContent=c; b.onclick=()=>chkGairaigo(c,correct,b); g2.appendChild(b); }); }
 function chkGairaigo(sel,correct,btn){
   if(gAns) return; gAns=true;
@@ -1603,8 +1705,8 @@ function chkGairaigo(sel,correct,btn){
   comboHit(ok);
   recordResult({genre:'gairaigo',key:g.w,rowIndex:g.rowIndex},ok); updateGairaigoScore();
   const fb=document.getElementById('gairaigo-fb'); fb.className='fb '+(ok?'ok':'ng');
-  if(ok){ fb.innerHTML=`⭐ 正解！`; fb.innerHTML+=`<div style="margin-top:5px;font-size:.8rem;font-weight:400">${gMode==='ex'?g.m:g.ex||''}</div>`; }
-  else { fb.innerHTML=`😓 正解は「${correct}」だよ`; fb.innerHTML+=`<div style="margin-top:5px;font-size:.8rem;font-weight:400">${gMode==='ex'?g.m:g.ex||''}</div>`; }
+  const gInfo=gMode==='ex'?g.m:(gMode==='mword'?`${g.r?`（${g.r}）`:''}${g.ex?`　例：${g.ex}`:''}`:(g.ex||''));
+  fb.innerHTML=(ok?`⭐ 正解！`:`😓 正解は「${correct}」だよ`)+`<div style="margin-top:5px;font-size:.8rem;font-weight:400">${gInfo}</div>`;
   fb.style.display='block';
   if(ok){ setTimeout(()=>nextGairaigo(),500); } else { document.getElementById('gairaigo-nxtbtn').style.display='block'; }
 }
@@ -2021,6 +2123,7 @@ const GENRE_BADGE = {
   kanyouku: {label:'✋ 慣用句',   bg:'#ede8f8',color:'#7c5cbf'},
   yoji:     {label:'🈶 四字熟語', bg:'#fde8e8',color:'#c0392b'},
   sanjigo:  {label:'📝 三字熟語', bg:'#fde8d0',color:'#d4380d'},
+  taigiruigi:{label:'↔️ 対義語・類義語', bg:'#e3e6f5',color:'#3f51b5'},
 };
 
 async function goShuffle(){
@@ -2121,6 +2224,7 @@ function recordResult(item, ok){
     kanyouku: {store:SKA, lsKey:'kanyouku_v1'},
     yoji:     {store:SY,  lsKey:'yoji_v1'},
     sanjigo:  {store:SSJ, lsKey:'sanjigo_v1'},
+    taigiruigi:{store:STG, lsKey:'taigi_v1'},
   };
   const m=map[item.genre]; if(!m) return;
   if(!m.store[item.key]) m.store[item.key]=item.genre==='wago'?{ef:2.5,interval:0,nextDue:null,reps:0,totalOk:0,totalNg:0}:{totalOk:0,totalNg:0};
@@ -2351,6 +2455,153 @@ function showSanjigoResult(){
   flushQueue();
 }
 
+// ── TAIGIRUIGI（対義語・類義語）──
+let TAIGI=[], STG={}, TAIGI_WORDS=[];
+let taigiPool=[], taigiIdx=0, taigiOk=0, taigiNg=0, taigiAns=false, taigiCur=null;
+let taigiTimerSec=180, taigiTimerInterval=null;
+let taigiLvFilter='all';
+
+function taigiKey(t){ return t.k1+'⇔'+t.k2; }
+function isRuigi(t){ return (t.grp||'').indexOf('類')>=0; } // 類義語=true, 対義語=false
+function taigiSym(t){ return isRuigi(t)?'≒':'⇔'; }
+
+async function loadTaigi(){
+  if(TAIGI.length) return;
+  document.getElementById('loading-overlay').classList.remove('hidden');
+  document.querySelector('.loading-text').textContent='対義語・類義語データを読み込み中…';
+  try {
+    const res=await fetch(`${SHEET_URL}?type=taigiruigi`); const data=await res.json();
+    TAIGI=data.map(row=>({
+      k1: row.kotoba1||'',
+      k2: row.kotoba2||'',
+      m:  row.meaning||'',
+      grp:row.Group||row.group||'',
+      lv: String(row.LEVEL||row.level||row.lv||''),
+      rowIndex: row.rowIndex,
+      _ok: parseInt(row.correctCount)||0,
+      _total: parseInt(row.totalCount)||0,
+    })).filter(x=>x.k1&&x.k2);
+    TAIGI_WORDS=[...new Set(TAIGI.flatMap(t=>[t.k1,t.k2]))];
+    STG=JSON.parse(localStorage.getItem('taigi_v1')||'{}');
+    TAIGI.forEach(t=>{ const key=taigiKey(t); if(!STG[key]) STG[key]={totalOk:0,totalNg:0}; STG[key].totalOk=t._ok; STG[key].totalNg=t._total-t._ok; });
+    document.getElementById('taigi-badge').textContent=TAIGI.length+'問';
+  } catch(e){ showToast('⚠️ 対義語・類義語の読み込みに失敗しました'); console.error(e); }
+  document.getElementById('loading-overlay').classList.add('hidden');
+  document.querySelector('.loading-text').textContent='語句データを読み込み中…';
+}
+
+function buildTaigiLvButtons(){
+  const lvs=['all',...[...new Set(TAIGI.map(x=>x.lv).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))];
+  const grid=document.getElementById('taigi-lv-grid'); if(!grid) return; grid.innerHTML='';
+  lvs.forEach(lv=>{
+    const sel=lv===taigiLvFilter;
+    const b=document.createElement('button');
+    const cnt=lv==='all'?TAIGI.length:TAIGI.filter(x=>x.lv===lv).length;
+    b.style.cssText=`padding:10px 6px;border:none;border-radius:12px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.82rem;font-weight:800;cursor:pointer;text-align:center;box-shadow:var(--sh);transition:transform .15s;${sel?'background:linear-gradient(135deg,#3f51b5,#5c6bc0);color:white':'background:white;color:var(--deep)'}`;
+    b.innerHTML=`${lv==='all'?'すべて':lv}<br><span style="font-size:.65rem;font-weight:400;opacity:.75">${cnt}問</span>`;
+    b.onclick=()=>{
+      grid.querySelectorAll('button').forEach(x=>{ x.style.background='white'; x.style.color='var(--deep)'; });
+      b.style.background='linear-gradient(135deg,#3f51b5,#5c6bc0)'; b.style.color='white';
+      taigiLvFilter=lv;
+      const sub=document.getElementById('taigi-lv-sub');
+      if(sub) sub.textContent=lv==='all'?'すべてのレベルからランダム':`レベル${lv}のみ出題`;
+    };
+    grid.appendChild(b);
+  });
+}
+
+async function goTaigi(){
+  await loadTaigi();
+  if(!TAIGI.length) return;
+  taigiLvFilter='all';
+  buildTaigiLvButtons();
+  show('s-taigi-level');
+}
+
+function confirmTaigiLevel(){ startTaigi(); }
+
+function startTaigi(){
+  const filtered=taigiLvFilter==='all'?TAIGI:TAIGI.filter(t=>t.lv===taigiLvFilter);
+  if(!filtered.length){ showToast(`${taigiLvFilter}レベルのデータがありません`); return; }
+  if(TAIGI_WORDS.length<4){ showToast('語句が少なすぎます（4語以上必要）'); return; }
+  taigiPool=shuffle([...filtered,...filtered,...filtered]);
+  taigiIdx=0; taigiOk=0; taigiNg=0; taigiTimerSec=180;
+  updateTaigiScore(); updateTaigiTimerDisplay();
+  const el=document.getElementById('taigi-timer'); el.style.background='linear-gradient(135deg,#3f51b5,#5c6bc0)';
+  clearInterval(taigiTimerInterval);
+  taigiTimerInterval=setInterval(()=>{
+    taigiTimerSec--; updateTaigiTimerDisplay();
+    const el=document.getElementById('taigi-timer');
+    if(taigiTimerSec<=30) el.style.background='linear-gradient(135deg,#e05252,#f07070)';
+    else if(taigiTimerSec<=60) el.style.background='linear-gradient(135deg,#e05252,#f5a623)';
+    if(taigiTimerSec<=0){ clearInterval(taigiTimerInterval); showTaigiResult(); }
+  },1000);
+  show('s-taigi'); renderTaigi();
+}
+
+function quitTaigi(){ clearInterval(taigiTimerInterval); flushQueue(); show('s-taigi-level'); }
+function updateTaigiTimerDisplay(){ const m=Math.floor(taigiTimerSec/60),s=taigiTimerSec%60; document.getElementById('taigi-timer').textContent=`${m}:${String(s).padStart(2,'0')}`; }
+function updateTaigiScore(){ document.getElementById('taigi-ok').textContent=taigiOk; document.getElementById('taigi-ng').textContent=taigiNg; document.getElementById('taigi-total').textContent=taigiOk+taigiNg; }
+
+function makeTaigiChoices(t, shown, correct){
+  const exclude=new Set([shown, correct]);
+  const sameLv=[...new Set(TAIGI.filter(x=>x.lv===t.lv).flatMap(x=>[x.k1,x.k2]))].filter(w=>!exclude.has(w));
+  const others=TAIGI_WORDS.filter(w=>!exclude.has(w)&&!sameLv.includes(w));
+  const dummies=[...shuffle(sameLv),...shuffle(others)].slice(0,3);
+  return shuffle([correct,...dummies]);
+}
+
+function renderTaigi(){
+  if(taigiIdx>=taigiPool.length){ taigiPool=shuffle(taigiPool); taigiIdx=0; }
+  taigiAns=false; const t=taigiPool[taigiIdx];
+  document.getElementById('taigi-fb').style.display='none';
+  document.getElementById('taigi-nxtbtn').style.display='none';
+  document.getElementById('taigi-prog').style.width=`${(taigiIdx/taigiPool.length)*100}%`;
+  // 出題方向をランダムに決定（kotoba1→kotoba2 または kotoba2→kotoba1）
+  const dir=Math.random()<0.5;
+  const shown=dir?t.k1:t.k2;
+  const correct=dir?t.k2:t.k1;
+  taigiCur={t, shown, correct};
+  document.getElementById('taigi-qlbl').textContent=isRuigi(t)?'≒ 似た意味の言葉は？':'⇔ 反対の意味の言葉は？';
+  document.getElementById('taigi-qtxt').textContent=shown;
+  document.getElementById('taigi-qsub').textContent='';
+  const g=document.getElementById('taigi-cgrid'); g.innerHTML='';
+  makeTaigiChoices(t, shown, correct).forEach(c=>{
+    const b=document.createElement('button'); b.className='ch'; b.textContent=c;
+    b.onclick=()=>chkTaigi(c,b); g.appendChild(b);
+  });
+}
+
+function chkTaigi(sel,btn){
+  if(taigiAns) return; taigiAns=true;
+  const {t, correct}=taigiCur;
+  document.querySelectorAll('#taigi-cgrid .ch').forEach(b=>{ b.disabled=true; if(b.textContent===correct)b.classList.add('ok'); });
+  const ok=sel===correct; if(!ok) btn.classList.add('ng');
+  if(ok){ taigiOk++; shootStar('✨'); } else { taigiNg++; }
+  comboHit(ok);
+  recordResult({genre:'taigiruigi', key:taigiKey(t), rowIndex:t.rowIndex}, ok);
+  updateTaigiScore();
+  const fb=document.getElementById('taigi-fb'); fb.className='fb '+(ok?'ok':'ng');
+  fb.innerHTML=(ok?'⭐ 正解！':`😓 正解は「${correct}」だよ`)
+    +`<div style="margin-top:5px;font-size:.82rem;font-weight:400">${t.k1} ${taigiSym(t)} ${t.k2}${t.m?`　${t.m}`:''}</div>`;
+  fb.style.display='block';
+  if(ok){ setTimeout(()=>nextTaigi(),500); } else { document.getElementById('taigi-nxtbtn').style.display='block'; }
+}
+
+function nextTaigi(){ taigiIdx++; renderTaigi(); }
+
+function showTaigiResult(){
+  clearInterval(taigiTimerInterval);
+  const total=taigiOk+taigiNg, pct=total>0?Math.round(taigiOk/total*100):0;
+  document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
+  document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
+  document.getElementById('rsco').innerHTML=`3分間で <strong>${total}問</strong> 挑戦！<br>正解 <strong style="color:var(--grn)">${taigiOk}問</strong> ／ ミス <strong style="color:var(--red)">${taigiNg}問</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(taigiOk)}`;
+  document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); startTaigi(); };
+  document.getElementById('rovl').classList.add('on');
+  if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
+  flushQueue();
+}
+
 // ── SFX（WebAudio・音声ファイル不要）──
 let AC=null;
 let sfxOn=localStorage.getItem('sfx_on')!=='0';
@@ -2474,7 +2725,7 @@ function seedGachaPts(){
   if(GA.seeded) return;
   let total=0;
   Object.values(S).forEach(v=>{ total+=v.totalOk||0; });
-  ['koto_srs_v1','gairaigo_v1','kanyouku_v1','yoji_v1','sanjigo_v1'].forEach(k=>{
+  ['koto_srs_v1','gairaigo_v1','kanyouku_v1','yoji_v1','sanjigo_v1','taigi_v1'].forEach(k=>{
     try{ const o=JSON.parse(localStorage.getItem(k)||'{}'); Object.values(o).forEach(v=>{ total+=v.totalOk||0; }); }catch(e){}
   });
   const bonus=Math.min(total,200);
