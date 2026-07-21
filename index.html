@@ -878,7 +878,7 @@ body{font-family:'M PLUS Rounded 1c',sans-serif;background:linear-gradient(160de
 
 <!-- ═══ CARD（暗記カード：自己採点）═══ -->
 <div class="scr" id="s-card">
-  <div class="hdr"><button class="bk" onclick="quitCard()">←</button><div class="htitle" id="card-title">🃏 暗記カード</div><div class="hpill" id="card-timer" style="background:linear-gradient(135deg,#0d9488,#2dd4bf);color:white;font-size:1rem;padding:6px 16px">3:00</div></div>
+  <div class="hdr"><button class="bk" onclick="quitCard()">←</button><div class="htitle" id="card-title">🃏 暗記カード</div><div class="hpill" id="card-count" style="background:linear-gradient(135deg,#0d9488,#2dd4bf);color:white;font-size:1rem;padding:6px 16px">0/0</div></div>
   <div class="pbar"><div class="pfill" id="card-prog"></div></div>
   <div style="display:flex;gap:8px;width:100%;max-width:460px;margin-bottom:12px">
     <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;box-shadow:var(--sh);text-align:center">
@@ -1020,24 +1020,45 @@ function sm2Update(w, rating){
   if(rating>=2) addPts(1);
   saveS();
   updateQueue.push({ type:'wago', rowIndex: w.rowIndex, correctCount: c.totalOk, totalCount: c.totalOk+c.totalNg });
+  maybeAutoSave();
 }
 function saveS(){ localStorage.setItem('wago_srs_v2', JSON.stringify(S)); }
 function shuffle(a){ return [...a].sort(()=>Math.random()-.5); }
 function escReg(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); } // 正規表現メタ文字をエスケープ
-async function flushQueue() {
+// silent=true のときは「保存中」バーやエラートーストを出さない（自動保存用）
+async function flushQueue(silent) {
   if(updateQueue.length === 0) return;
   const queue = [...updateQueue]; updateQueue = [];
-  document.getElementById('saving-bar').classList.add('on');
+  const bar = document.getElementById('saving-bar');
+  if(!silent) bar.classList.add('on');
   try {
     await fetch(SHEET_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(queue), mode:'no-cors' });
   } catch(e) {
     // 送信失敗：キューに戻して次回の flushQueue で再送する
     updateQueue.unshift(...queue);
     console.error('保存エラー', e);
-    showToast('⚠️ 保存に失敗（次回に再送します）');
+    if(!silent) showToast('⚠️ 保存に失敗（次回に再送します）');
   }
-  setTimeout(()=>document.getElementById('saving-bar').classList.remove('on'), 1200);
+  if(!silent) setTimeout(()=>bar.classList.remove('on'), 1200);
 }
+
+// ── 保存の取りこぼし防止 ──
+const AUTOSAVE_EVERY = 5;              // ①この枚数ごとに自動保存
+function maybeAutoSave(){ if(updateQueue.length >= AUTOSAVE_EVERY) flushQueue(true); }
+
+// ②タブを閉じる・アプリを切り替えた瞬間に sendBeacon で確実に送る
+// （通常の fetch は離脱時に中断されることがあるため）
+function flushBeacon(){
+  if(updateQueue.length === 0) return;
+  try {
+    if(navigator.sendBeacon){
+      const blob = new Blob([JSON.stringify(updateQueue)], {type:'text/plain;charset=UTF-8'});
+      if(navigator.sendBeacon(SHEET_URL, blob)) updateQueue = [];
+    }
+  } catch(e){ console.error('beacon保存エラー', e); }
+}
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') flushBeacon(); });
+window.addEventListener('pagehide', flushBeacon);
 
 // 全ジャンルのlocalStorageから「一度でも解いた問題」の数を数える（未ロードのジャンルも含む）
 function countRecentSolved(){
@@ -2317,6 +2338,7 @@ function recordResult(item, ok){
   updateQueue.push({type:item.genre, rowIndex:item.rowIndex, correctCount:sc.totalOk, totalCount:sc.totalOk+sc.totalNg});
   todayCount++; localStorage.setItem('wago_today_count',todayCount); localStorage.setItem('wago_today_date',TODAY);
   if(ok) addPts(1);
+  maybeAutoSave();
 }
 
 function chkShuffle(sel, item, btn){
@@ -2707,7 +2729,7 @@ function genreScore(genre, key){ const st=GENRES[genre].store(); return st[key]|
 
 // ── 暗記カード（共通・自己採点／苦手特訓でも共用）──
 let cardGenre=null, cardLv='all', cardPool=[], cardIdx=0, cardOk=0, cardNg=0, cardFlipped=false;
-let cardTimerSec=180, cardTimerInterval=null;
+// 暗記カード・苦手特訓は時間制限なし（全カードやりきったら終了）
 let cardBackScreen='s-card-select', cardRetryFn=null;
 
 function goCard(){
@@ -2763,30 +2785,24 @@ function startCard(){
 // カードセッション本体（暗記カード・苦手特訓の両方から呼ぶ）
 function beginCardSession(items, title, backScreen, retryFn){
   if(!items.length){ showToast('カードがありません'); return; }
-  cardPool=shuffle([...items]); cardIdx=0; cardOk=0; cardNg=0; cardFlipped=false; cardTimerSec=180;
+  cardPool=shuffle([...items]); cardIdx=0; cardOk=0; cardNg=0; cardFlipped=false;
   cardBackScreen=backScreen; cardRetryFn=retryFn;
   document.getElementById('card-title').textContent=title;
-  updateCardScore(); updateCardTimer();
-  const el=document.getElementById('card-timer'); el.style.background='linear-gradient(135deg,#0d9488,#2dd4bf)';
-  clearInterval(cardTimerInterval);
-  cardTimerInterval=setInterval(()=>{
-    cardTimerSec--; updateCardTimer();
-    if(cardTimerSec<=30) el.style.background='linear-gradient(135deg,#e05252,#f07070)';
-    else if(cardTimerSec<=60) el.style.background='linear-gradient(135deg,#e05252,#f5a623)';
-    if(cardTimerSec<=0){ clearInterval(cardTimerInterval); showCardResult(); }
-  },1000);
+  updateCardScore();
+  document.getElementById('card-count').style.background='linear-gradient(135deg,#0d9488,#2dd4bf)';
   show('s-card'); renderCard();
 }
-function quitCard(){ clearInterval(cardTimerInterval); flushQueue(); show(cardBackScreen); }
-function updateCardTimer(){ const m=Math.floor(cardTimerSec/60),s=cardTimerSec%60; document.getElementById('card-timer').textContent=`${m}:${String(s).padStart(2,'0')}`; }
+function quitCard(){ flushQueue(); show(cardBackScreen); }
+function updateCardCount(){ document.getElementById('card-count').textContent=`${Math.min(cardIdx+1,cardPool.length)}/${cardPool.length}`; }
 function updateCardScore(){ document.getElementById('card-ok').textContent=cardOk; document.getElementById('card-ng').textContent=cardNg; document.getElementById('card-total').textContent=cardOk+cardNg; }
 function setCardJudge(active){
   ['card-btn-ok','card-btn-ng'].forEach(id=>{ const b=document.getElementById(id); b.style.opacity=active?'1':'.4'; b.style.pointerEvents=active?'auto':'none'; });
   document.getElementById('card-judge-hint').style.opacity=active?'1':'.4';
 }
 function renderCard(){
-  if(cardIdx>=cardPool.length){ cardPool=shuffle(cardPool); cardIdx=0; }
+  if(cardIdx>=cardPool.length){ showCardResult(); return; }  // 全カード終了
   cardFlipped=false; const it=cardPool[cardIdx];
+  updateCardCount();
   // アニメーションなしで即座に表面へ戻す（次カードの裏＝答えがチラ見えするのを防ぐ）
   const ci=document.getElementById('card-ci');
   ci.style.transition='none';
@@ -2818,11 +2834,10 @@ function cardJudge(ok){
   setTimeout(()=>{ cardIdx++; renderCard(); }, 350);
 }
 function showCardResult(){
-  clearInterval(cardTimerInterval);
   const total=cardOk+cardNg, pct=total>0?Math.round(cardOk/total*100):0;
   document.getElementById('remo').textContent=pct>=80?'🏆':pct>=60?'⭐':'💪';
-  document.getElementById('rtit').textContent=pct>=80?'すごい！！':pct>=60?'よくできました！':'もう一度がんばろう！';
-  document.getElementById('rsco').innerHTML=`3分間で <strong>${total}枚</strong> 挑戦！<br>わかった <strong style="color:var(--grn)">${cardOk}枚</strong> ／ できなかった <strong style="color:var(--red)">${cardNg}枚</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(cardOk)}`;
+  document.getElementById('rtit').textContent=pct>=80?'ぜんぶクリア！':pct>=60?'よくできました！':'もう一度がんばろう！';
+  document.getElementById('rsco').innerHTML=`カード <strong>${total}枚</strong> をやりきった！<br>わかった <strong style="color:var(--grn)">${cardOk}枚</strong> ／ できなかった <strong style="color:var(--red)">${cardNg}枚</strong><br>正答率 <strong>${pct}%</strong>${resultPtsLine(cardOk)}`;
   document.getElementById('result-retry-btn').onclick=()=>{ closeResult(); if(cardRetryFn) cardRetryFn(); };
   document.getElementById('rovl').classList.add('on');
   if(pct>=80) for(let i=0;i<6;i++) setTimeout(()=>shootStar(['🎉','⭐','🌟'][i%3]),i*180);
